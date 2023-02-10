@@ -12,8 +12,17 @@ class MainApp extends StatelessWidget {
     return const MaterialApp(
       home: Scaffold(
         body: Center(
-          child: Text('Hello World!'),
-        ),
+            child: TextField(
+          cursorColor: Colors.black,
+          style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.blueAccent,
+            border: OutlineInputBorder(
+              borderSide: BorderSide.none,
+            ),
+          ),
+        )),
       ),
     );
   }
