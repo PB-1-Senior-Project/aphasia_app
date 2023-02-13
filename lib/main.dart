@@ -17,6 +17,7 @@ class MainApp extends StatelessWidget {
 
 class HomePage extends StatefulWidget {
   // Code for the home page
+
   const HomePage({
     super.key,
   });
@@ -27,30 +28,49 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final fieldText = TextEditingController();
+  int _selectedIndex = 0;
+  final List<Widget> _children = [const HomePage(), const SettingsPage()];
 
   void clearText() {
     fieldText.clear();
+  }
+
+  void _onNavTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      Navigator.push(context,
+          MaterialPageRoute(builder: (context) => _children[_selectedIndex]));
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 69, 196, 255),
+      // bottomNavigationBar: BottomNavigationBar(
+      //   items: const <BottomNavigationBarItem>[
+      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+      //     BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings")
+      //   ],
+      //   currentIndex: _selectedIndex,
+      //   onTap: _onNavTapped,
+      // ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Center(
-                child:
-                    TextBox(fieldText: fieldText)), //Center(child: TextBox()),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(child: TextBox(fieldText: fieldText)),
+            ),
           ),
           Row(
             // Buttons
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
+                // This button is not functional yet
                 onPressed: () {
-                  // Add the text to speech functionality
+                  // Add the text to speech functionality here
                 },
                 child: const Text("Text to Speech test"),
               ),
@@ -74,6 +94,25 @@ class _HomePageState extends State<HomePage> {
       ),
       drawer: const OptionsMenu(),
     );
+  }
+}
+
+class SettingsPage extends StatefulWidget {
+  const SettingsPage({super.key});
+
+  @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text("Settings"),
+        ),
+        body: Center(child: Text("HI") //Slider(value: double,)
+            ));
   }
 }
 
@@ -145,8 +184,8 @@ class OptionsMenu extends StatelessWidget {
         backgroundColor: const Color.fromARGB(255, 255, 245, 245),
         child: ListView(
           padding: EdgeInsets.zero,
-          children: const [
-            SizedBox(
+          children: [
+            const SizedBox(
               height: 88,
               child: DrawerHeader(
                 decoration:
@@ -162,39 +201,24 @@ class OptionsMenu extends StatelessWidget {
                 ),
               ),
             ),
-            ListTile(leading: Icon(Icons.home), title: Text("Home")),
             ListTile(
-              leading: Icon(Icons.settings),
-              title: Text("Settings"),
+              leading: const Icon(Icons.home),
+              title: const Text("Home"),
+              onTap: () {
+                Navigator.pop(context);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings),
+              title: const Text("Settings"),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const SettingsPage()));
+              },
             )
           ],
         ));
   }
 }
-
-// class TextBox extends StatelessWidget {
-//   const TextBox({
-//     super.key,
-//   });
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return const SizedBox(
-//       width: 1000,
-//       height: 250,
-//       child: TextField(
-//         cursorColor: Colors.black,
-//         style: TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontSize: 60),
-//         maxLines: 5,
-//         decoration: InputDecoration(
-//           filled: true,
-//           hintText: "Enter Text Here",
-//           fillColor: Color.fromARGB(255, 255, 255, 255),
-//           border: OutlineInputBorder(
-//             borderSide: BorderSide.none,
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
