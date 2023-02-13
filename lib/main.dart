@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 void main() {
   runApp(const MainApp());
@@ -28,33 +29,15 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final fieldText = TextEditingController();
-  int _selectedIndex = 0;
-  final List<Widget> _children = [const HomePage(), const SettingsPage()];
 
   void clearText() {
     fieldText.clear();
-  }
-
-  void _onNavTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-      Navigator.push(context,
-          MaterialPageRoute(builder: (context) => _children[_selectedIndex]));
-    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 69, 196, 255),
-      // bottomNavigationBar: BottomNavigationBar(
-      //   items: const <BottomNavigationBarItem>[
-      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-      //     BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings")
-      //   ],
-      //   currentIndex: _selectedIndex,
-      //   onTap: _onNavTapped,
-      // ),
       body: Column(
         children: [
           SafeArea(
