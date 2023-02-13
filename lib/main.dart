@@ -17,8 +17,6 @@ class MainApp extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
-  // Code for the home page
-
   const HomePage({
     super.key,
   });
@@ -30,12 +28,20 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final fieldText = TextEditingController();
 
+  @override
+  void dispose() {
+    fieldText.dispose();
+    super.dispose();
+  }
+
+  // Clears the text in the textbox
   void clearText() {
     fieldText.clear();
   }
 
   @override
   Widget build(BuildContext context) {
+    // Code for the home page
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 69, 196, 255),
       body: Column(
@@ -43,15 +49,18 @@ class _HomePageState extends State<HomePage> {
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(8.0),
-              child: Center(child: TextBox(fieldText: fieldText)),
+              child: Center(
+                  child: TextBox(
+                fieldText: fieldText,
+              )),
             ),
           ),
           Row(
-            // Buttons
+            // Code for buttons
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // This button is not functional yet
               ElevatedButton(
-                // This button is not functional yet
                 onPressed: () {
                   // Add the text to speech functionality here
                 },
@@ -60,8 +69,8 @@ class _HomePageState extends State<HomePage> {
               const Padding(
                 padding: EdgeInsets.all(8.0),
               ),
+              // Clears the textBox
               ElevatedButton(
-                // Clears the textBox
                 onPressed: () {
                   clearText();
                 },
@@ -75,7 +84,7 @@ class _HomePageState extends State<HomePage> {
         title: const Text("Visually Assisted Speech Therapy"),
         backgroundColor: const Color.fromARGB(255, 2, 189, 164),
       ),
-      drawer: const OptionsMenu(),
+      drawer: const Menu(),
     );
   }
 }
@@ -88,27 +97,60 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
+  double _currentSliderValue = 60;
+
+  double getSliderValue() {
+    return _currentSliderValue.round().toDouble();
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Code for the settings page
+
     return Scaffold(
         appBar: AppBar(
           title: const Text("Settings"),
         ),
-        body: Center(child: Text("HI") //Slider(value: double,)
-            ));
+        body: Column(
+          children: [
+            const Padding(
+              padding: EdgeInsets.only(top: 16.0),
+              child: Text(
+                "Font Size",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Center(
+                child: Slider(
+              value: _currentSliderValue,
+              max: 100,
+              min: 10,
+              divisions: 100,
+              label: _currentSliderValue.round().toString(),
+              onChanged: (double value) {
+                setState(() {
+                  _currentSliderValue = value;
+                });
+              },
+            )),
+            const Text(
+              "The eye tracking will work better with larger values, \n 60 or higher is recommended",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+          ],
+        ));
   }
 }
 
 class TextBox extends StatelessWidget {
-  const TextBox({
-    super.key,
-    required this.fieldText,
-  });
+  const TextBox({super.key, required this.fieldText});
 
   final TextEditingController fieldText;
 
   @override
   Widget build(BuildContext context) {
+    // Code for the textbox on the home page
     return SizedBox(
       // Text Box
       width: 1000,
@@ -132,37 +174,14 @@ class TextBox extends StatelessWidget {
   }
 }
 
-class FontChanger extends StatefulWidget {
-  const FontChanger({super.key});
-
-  @override
-  State<FontChanger> createState() => FontChangerState();
-}
-
-class FontChangerState extends State<FontChanger> {
-  double _currentSliderValue = 20;
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        body: Slider(
-            value: _currentSliderValue,
-            max: 100,
-            min: 10,
-            onChanged: ((double value) {
-              setState(() {
-                _currentSliderValue = value;
-              });
-            })));
-  }
-}
-
-class OptionsMenu extends StatelessWidget {
-  const OptionsMenu({
+class Menu extends StatelessWidget {
+  const Menu({
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    // Code for the pop out menu
     return Drawer(
         backgroundColor: const Color.fromARGB(255, 255, 245, 245),
         child: ListView(
