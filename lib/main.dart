@@ -113,6 +113,10 @@ class _SettingsPageState extends State<SettingsPage> {
         ),
         body: Column(
           children: [
+            const Text(
+              "NOT IMPLEMENTED YET",
+              style: TextStyle(fontSize: 32),
+            ),
             const Padding(
               padding: EdgeInsets.only(top: 16.0),
               child: Text(
