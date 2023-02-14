@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:google_ml_kit/google_ml_kit.dart';
-import 'package:camera/camera.dart';
-//import 'package:tflite/tflite.dart';
 
 void main() {
   runApp(const MainApp());
