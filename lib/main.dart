@@ -77,7 +77,12 @@ class _HomePageState extends State<HomePage> {
                 child: const Text("Clear the Textbox"),
               )
             ],
-          )
+          ),
+          Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: ElevatedButton(
+                onPressed: () {}, child: const Text("Face Recognition Test")),
+          ),
         ],
       ),
       appBar: AppBar(
