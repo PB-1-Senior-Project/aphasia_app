@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
 
 void main() {
@@ -27,6 +29,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final fieldText = TextEditingController();
+  static const platform = MethodChannel('aphasia_app/face_mesh');
+
+  // Future<void> _getFaceMesh() async {
+
+  // }
 
   @override
   void dispose() {
