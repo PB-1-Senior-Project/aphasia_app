@@ -2,14 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:camera/camera.dart';
 
-void main() {
+late List<CameraDescription> _cameras;
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  _cameras = await availableCameras();
   runApp(const MainApp());
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
 
+  @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
@@ -29,15 +40,62 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final fieldText = TextEditingController();
-  static const platform = MethodChannel('aphasia_app/face_mesh');
+  static const platform = MethodChannel('aphasia_app/face_mesh_method');
+  static const _imageChannel = EventChannel('aphasia_app/face_mesh_channel');
+  bool _isStreaming = false;
 
-  // Future<void> _getFaceMesh() async {
+  late CameraController controller;
+  late List<CameraDescription> _cameras;
+  late CameraImage _savedImage;
+  String _testMessage = "";
 
-  // }
+  Future<void> _initCamera() async {
+    _cameras = await availableCameras();
+    controller = CameraController(_cameras[1], ResolutionPreset.max);
+    controller.initialize().then((_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {});
+    }).catchError((Object e) {
+      if (e is CameraException) {
+        switch (e.code) {
+          case 'CameraAccessDenied':
+            break;
+          default:
+            break;
+        }
+      }
+    });
+  }
+
+  @override
+  void initState() {
+    _initCamera();
+    super.initState();
+  }
+
+  Future<String> _startFaceDetection(CameraImage image) async {
+    String testMessage = "";
+
+    try {
+      final String result = await platform.invokeMethod('startFaceDetection');
+      testMessage = result;
+    } on PlatformException catch (e) {
+      debugPrint('debug: $e');
+      testMessage = "Not Found";
+    }
+
+    setState(() {
+      _testMessage = testMessage;
+    });
+    return testMessage;
+  }
 
   @override
   void dispose() {
     fieldText.dispose();
+    controller.dispose();
     super.dispose();
   }
 
@@ -51,46 +109,75 @@ class _HomePageState extends State<HomePage> {
     // Code for the home page
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 69, 196, 255),
-      body: Column(
-        children: [
-          SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                  child: TextBox(
-                fieldText: fieldText,
-              )),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Center(
+                    child: TextBox(
+                  fieldText: fieldText,
+                )),
+              ),
             ),
-          ),
-          Row(
-            // Code for buttons
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // This button is not functional yet
-              ElevatedButton(
-                onPressed: () {
-                  // Add the text to speech functionality here
-                },
-                child: const Text("Text to Speech test"),
-              ),
-              const Padding(
-                padding: EdgeInsets.all(8.0),
-              ),
-              // Clears the textBox
-              ElevatedButton(
-                onPressed: () {
-                  clearText();
-                },
-                child: const Text("Clear the Textbox"),
-              )
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: ElevatedButton(
-                onPressed: () {}, child: const Text("Face Recognition Test")),
-          ),
-        ],
+            Row(
+              // Code for buttons
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // This button is not functional yet
+                ElevatedButton(
+                  onPressed: () {
+                    // Add the text to speech functionality here
+                  },
+                  child: const Text("Text to Speech test"),
+                ),
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+                // Clears the textBox
+                ElevatedButton(
+                  onPressed: () {
+                    clearText();
+                  },
+                  child: const Text("Clear the Textbox"),
+                )
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: ElevatedButton(
+                  onPressed: () async {
+                    if (!controller.value.isInitialized) {
+                      Container();
+                    } else {
+                      try {
+                        if (_isStreaming) {
+                          controller.dispose();
+                          _isStreaming = false;
+                        } else {
+                          final dataStream =
+                              _imageChannel.receiveBroadcastStream().distinct();
+                          //.map((dynamic event) => intToConne)
+                          controller.startImageStream((CameraImage image) {
+                            //_processImage(image);
+                            //_startFaceDetection(image);
+                            // Send to native here?
+                          });
+                          _isStreaming = true;
+                        }
+                      } on PlatformException catch (e) {
+                        throw CameraException(e.code, e.message);
+                      }
+                      // Navigator.of(context).push(MaterialPageRoute(
+                      //     builder: (context) => CameraPreview(controller)));
+                    }
+                  },
+                  child: const Text("Face Recognition Test")),
+            ),
+            Text(_testMessage),
+          ],
+        ),
       ),
       appBar: AppBar(
         title: const Text("Visually Assisted Speech Therapy"),
@@ -98,6 +185,25 @@ class _HomePageState extends State<HomePage> {
       ),
       drawer: const Menu(),
     );
+  }
+}
+
+class CreateView extends StatelessWidget {
+  const CreateView({
+    super.key,
+    required CameraController controller,
+  }) : _controller = controller;
+
+  final CameraController _controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        body: Column(
+      children: [
+        CameraPreview(_controller),
+      ],
+    ));
   }
 }
 
