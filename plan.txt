@@ -1,0 +1,5 @@
+use an event channel to stream the image data down to android
+
+Maybe use the same event channel to stream the result back
+
+Class FlutterImageView, maybe use for displaying the camera 
