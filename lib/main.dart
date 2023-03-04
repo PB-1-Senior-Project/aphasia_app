@@ -1,8 +1,13 @@
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:throttling/throttling.dart';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:camera/camera.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 late List<CameraDescription> _cameras;
 
@@ -40,18 +45,22 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final fieldText = TextEditingController();
-  static const platform = MethodChannel('aphasia_app/face_mesh_method');
-  static const _imageChannel = EventChannel('aphasia_app/face_mesh_channel');
+  //static const platform = MethodChannel('aphasia_app/face_mesh_method');
+  //static const _imageChannel = EventChannel('aphasia_app/face_mesh_channel');
   bool _isStreaming = false;
 
   late CameraController controller;
   late List<CameraDescription> _cameras;
-  late CameraImage _savedImage;
-  String _testMessage = "";
+  //late Image _testImage;
 
   Future<void> _initCamera() async {
+    // await Permission.mediaLibrary.request();
+    // await Permission.accessMediaLocation.request();
+    // await Permission.photos.request();
+    // await Permission.manageExternalStorage.request();
+
     _cameras = await availableCameras();
-    controller = CameraController(_cameras[1], ResolutionPreset.max);
+    controller = CameraController(_cameras[1], ResolutionPreset.low);
     controller.initialize().then((_) {
       if (!mounted) {
         return;
@@ -75,22 +84,23 @@ class _HomePageState extends State<HomePage> {
     super.initState();
   }
 
-  Future<String> _startFaceDetection(CameraImage image) async {
-    String testMessage = "";
+  // Future<int> startFaceDetection(Image image) async {
+  //   int testMessage;
 
-    try {
-      final String result = await platform.invokeMethod('startFaceDetection');
-      testMessage = result;
-    } on PlatformException catch (e) {
-      debugPrint('debug: $e');
-      testMessage = "Not Found";
-    }
+  //   try {
+  //     final int result =
+  //         await platform.invokeMethod('startFaceDetection', {'image': image});
+  //     testMessage = result;
+  //   } on PlatformException catch (e) {
+  //     debugPrint('debug: $e');
+  //     testMessage = -2;
+  //   }
 
-    setState(() {
-      _testMessage = testMessage;
-    });
-    return testMessage;
-  }
+  //   setState(() {
+  //     _testMessage = testMessage;
+  //   });
+  //   return testMessage;
+  // }
 
   @override
   void dispose() {
@@ -153,29 +163,63 @@ class _HomePageState extends State<HomePage> {
                     } else {
                       try {
                         if (_isStreaming) {
+                          controller.stopImageStream();
                           controller.dispose();
                           _isStreaming = false;
                         } else {
-                          final dataStream =
-                              _imageChannel.receiveBroadcastStream().distinct();
+                          //final dataStream =
+                          // _imageChannel.receiveBroadcastStream().distinct();
                           //.map((dynamic event) => intToConne)
-                          controller.startImageStream((CameraImage image) {
-                            //_processImage(image);
-                            //_startFaceDetection(image);
-                            // Send to native here?
-                          });
                           _isStreaming = true;
+                          controller.startImageStream((image) async {
+                            List<int> strides =
+                                Int32List(image.planes.length * 2);
+                            int index = 0;
+                            final bytes = image.planes.map((plane) {
+                              strides[index] = (plane.bytesPerRow);
+                              index++;
+                              strides[index] = (plane.bytesPerPixel)!;
+                              index++;
+                              return plane.bytes;
+                            }).toList();
+                            //final thr = Throttling(
+                            //    duration: const Duration(milliseconds: 50));
+                            await const MethodChannel(
+                                    'aphasia_app/face_mesh_method')
+                                .invokeMethod("startFaceDetection", {
+                              'byteList': bytes,
+                              'height': image.height,
+                              'width': image.width,
+                              'strides': strides
+                            });
+                            //await thr.close();
+
+                            //_processImage(image);
+                            //print("object");
+                            //print('Beef');
+                            //Image tempImage;
+                            //Image tempImage = image as Image; // This is causing the error, denies permission, happens when using the image class
+                            //print(tempImage.runtimeType);
+                            //print('Stew');
+                            // print(tempImage.);
+
+                            //startFaceDetection(tempImage);
+                            // Send to native here?
+                            // setState(() {
+                            //   _testImage = test;
+                            // });
+                          });
                         }
                       } on PlatformException catch (e) {
                         throw CameraException(e.code, e.message);
                       }
-                      // Navigator.of(context).push(MaterialPageRoute(
-                      //     builder: (context) => CameraPreview(controller)));
+                      // Navigator.of(context).push(
+                      //     MaterialPageRoute(builder: (context) => _testImage));
                     }
                   },
                   child: const Text("Face Recognition Test")),
             ),
-            Text(_testMessage),
+            //Text(_testMessage.toString()),
           ],
         ),
       ),
