@@ -1,20 +1,11 @@
-import 'dart:io';
-import 'dart:typed_data';
-import 'package:throttling/throttling.dart';
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:camera/camera.dart';
-import 'package:permission_handler/permission_handler.dart';
-
-late List<CameraDescription> _cameras;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  _cameras = await availableCameras();
   runApp(const MainApp());
 }
 
@@ -45,67 +36,19 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final fieldText = TextEditingController();
-  //static const platform = MethodChannel('aphasia_app/face_mesh_method');
+  static const platform = MethodChannel('aphasia_app/face_mesh_method');
   //static const _imageChannel = EventChannel('aphasia_app/face_mesh_channel');
   bool _isStreaming = false;
 
-  late CameraController controller;
-  late List<CameraDescription> _cameras;
-  //late Image _testImage;
-
-  Future<void> _initCamera() async {
-    // await Permission.mediaLibrary.request();
-    // await Permission.accessMediaLocation.request();
-    // await Permission.photos.request();
-    // await Permission.manageExternalStorage.request();
-
-    _cameras = await availableCameras();
-    controller = CameraController(_cameras[1], ResolutionPreset.low);
-    controller.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {});
-    }).catchError((Object e) {
-      if (e is CameraException) {
-        switch (e.code) {
-          case 'CameraAccessDenied':
-            break;
-          default:
-            break;
-        }
-      }
-    });
-  }
-
   @override
   void initState() {
-    _initCamera();
     super.initState();
   }
-
-  // Future<int> startFaceDetection(Image image) async {
-  //   int testMessage;
-
-  //   try {
-  //     final int result =
-  //         await platform.invokeMethod('startFaceDetection', {'image': image});
-  //     testMessage = result;
-  //   } on PlatformException catch (e) {
-  //     debugPrint('debug: $e');
-  //     testMessage = -2;
-  //   }
-
-  //   setState(() {
-  //     _testMessage = testMessage;
-  //   });
-  //   return testMessage;
-  // }
 
   @override
   void dispose() {
     fieldText.dispose();
-    controller.dispose();
+
     super.dispose();
   }
 
@@ -158,64 +101,8 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.all(20.0),
               child: ElevatedButton(
                   onPressed: () async {
-                    if (!controller.value.isInitialized) {
-                      Container();
-                    } else {
-                      try {
-                        if (_isStreaming) {
-                          controller.stopImageStream();
-                          controller.dispose();
-                          _isStreaming = false;
-                        } else {
-                          //final dataStream =
-                          // _imageChannel.receiveBroadcastStream().distinct();
-                          //.map((dynamic event) => intToConne)
-                          _isStreaming = true;
-                          controller.startImageStream((image) async {
-                            List<int> strides =
-                                Int32List(image.planes.length * 2);
-                            int index = 0;
-                            final bytes = image.planes.map((plane) {
-                              strides[index] = (plane.bytesPerRow);
-                              index++;
-                              strides[index] = (plane.bytesPerPixel)!;
-                              index++;
-                              return plane.bytes;
-                            }).toList();
-                            //final thr = Throttling(
-                            //    duration: const Duration(milliseconds: 50));
-                            await const MethodChannel(
-                                    'aphasia_app/face_mesh_method')
-                                .invokeMethod("startFaceDetection", {
-                              'byteList': bytes,
-                              'height': image.height,
-                              'width': image.width,
-                              'strides': strides
-                            });
-                            //await thr.close();
-
-                            //_processImage(image);
-                            //print("object");
-                            //print('Beef');
-                            //Image tempImage;
-                            //Image tempImage = image as Image; // This is causing the error, denies permission, happens when using the image class
-                            //print(tempImage.runtimeType);
-                            //print('Stew');
-                            // print(tempImage.);
-
-                            //startFaceDetection(tempImage);
-                            // Send to native here?
-                            // setState(() {
-                            //   _testImage = test;
-                            // });
-                          });
-                        }
-                      } on PlatformException catch (e) {
-                        throw CameraException(e.code, e.message);
-                      }
-                      // Navigator.of(context).push(
-                      //     MaterialPageRoute(builder: (context) => _testImage));
-                    }
+                    await platform.invokeMethod("startFaceDetection");
+                    print("bread");
                   },
                   child: const Text("Face Recognition Test")),
             ),
@@ -229,25 +116,6 @@ class _HomePageState extends State<HomePage> {
       ),
       drawer: const Menu(),
     );
-  }
-}
-
-class CreateView extends StatelessWidget {
-  const CreateView({
-    super.key,
-    required CameraController controller,
-  }) : _controller = controller;
-
-  final CameraController _controller;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        body: Column(
-      children: [
-        CameraPreview(_controller),
-      ],
-    ));
   }
 }
 

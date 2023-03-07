@@ -3,3 +3,8 @@ https://github.com/theamorn/flutter-stream-image/blob/main/lib/main.dart
 
 TO DO:
 Throttle the stream to help with performance.
+
+
+https://dev.to/funkyidol/exploring-camerax-api-beta-part-2-image-analysis-1hha
+
+https://developer.android.com/training/camerax/architecture#additional-resources 

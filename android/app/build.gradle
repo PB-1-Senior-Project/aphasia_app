@@ -47,7 +47,7 @@ android {
         applicationId "com.example.aphasia_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion 21 // Change to 29 if necessary
+        minSdkVersion 28 // Change to 29 if necessary
         targetSdkVersion 29 //flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -73,9 +73,21 @@ dependencies {
     // androidTestImplementation 'com.android.support.test:runner:1.0.2'
     // androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     
- implementation 'com.google.mlkit:face-mesh-detection:16.0.0-beta1'
-    implementation 'androidx.camera:camera-core:1.0.2'
-    implementation 'androidx.camera:camera-view:1.1.0-beta02'
-    implementation 'androidx.camera:camera-lifecycle:1.0.2'
+    def camerax_version =  "1.2.1" // "1.1.0-beta01"
+    implementation "androidx.camera:camera-core:${camerax_version}"
+    implementation "androidx.camera:camera-camera2:${camerax_version}"
+    implementation "androidx.camera:camera-lifecycle:${camerax_version}"
+    implementation "androidx.camera:camera-video:${camerax_version}"
+
+    implementation "androidx.camera:camera-view:${camerax_version}"
+    implementation "androidx.camera:camera-extensions:${camerax_version}"
+
+
+    // def cameraVersion = '1.2.0-beta02'
+    implementation 'com.google.mlkit:face-mesh-detection:16.0.0-beta1'
+    // implementation 'androidx.camera:camera-core:1.0.2'
+    // implementation 'androidx.camera:camera-view:1.1.0-beta02'     //implementation 'androidx.camera:camera-view:1.1.0-beta02'
+
+    // implementation 'androidx.camera:camera-lifecycle:1.0.2'
 
 }
