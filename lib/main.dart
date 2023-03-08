@@ -38,7 +38,6 @@ class _HomePageState extends State<HomePage> {
   final fieldText = TextEditingController();
   static const platform = MethodChannel('aphasia_app/face_mesh_method');
   //static const _imageChannel = EventChannel('aphasia_app/face_mesh_channel');
-  bool _isStreaming = false;
 
   @override
   void initState() {
@@ -102,7 +101,6 @@ class _HomePageState extends State<HomePage> {
               child: ElevatedButton(
                   onPressed: () async {
                     await platform.invokeMethod("startFaceDetection");
-                    print("bread");
                   },
                   child: const Text("Face Recognition Test")),
             ),

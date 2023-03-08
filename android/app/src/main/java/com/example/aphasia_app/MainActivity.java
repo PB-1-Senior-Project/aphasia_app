@@ -162,9 +162,7 @@ public class MainActivity extends FlutterActivity {
 
                                     for (FaceMesh faceMesh : output) {
                                         Rect bounds = faceMesh.getBoundingBox();
-                                        System.out.println("Face Mesh");
-                                        System.out.println(bounds.left);
-
+                                        
                                         // Gets all points
                                         List<FaceMeshPoint> faceMeshPoints = faceMesh.getAllPoints();
 
