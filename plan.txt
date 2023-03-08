@@ -2,7 +2,7 @@ https://medium.com/kbtg-life/real-time-machine-learning-with-flutter-camera-bbcf
 https://github.com/theamorn/flutter-stream-image/blob/main/lib/main.dart
 
 TO DO:
-Throttle the stream to help with performance.
+Throttle the camera to help with performance.
 
 
 https://dev.to/funkyidol/exploring-camerax-api-beta-part-2-image-analysis-1hha

@@ -38,7 +38,7 @@ public class MainActivity extends FlutterActivity {
     private static final String METHOD_CHANNEL = "aphasia_app/face_mesh_method";
     private boolean isInitialized = false;
 
-
+    private ProcessCameraProvider cameraProvider;
 
     private ImageAnalysis imageAnalysis;
 
@@ -74,7 +74,7 @@ public class MainActivity extends FlutterActivity {
 //                                            ImageAnalysis imageAnalysis = builder.build();
 
                                             // Camera provider is now guaranteed to be available
-                                            ProcessCameraProvider cameraProvider = cameraProviderFuture.get();
+                                            cameraProvider = cameraProviderFuture.get();
 
                                             FaceAnalyzer faceAnalyzer = new FaceAnalyzer();
 
@@ -117,7 +117,8 @@ public class MainActivity extends FlutterActivity {
 
 
                                 else {
-
+                                    cameraProvider.unbindAll();
+                                    imageAnalysis.clearAnalyzer();
                                     // Stop the Camera here
                                     isInitialized = false;
                                 }
