@@ -1,17 +1,29 @@
 package com.example.aphasia_app;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.graphics.YuvImage;
 import android.media.Image;
+import android.os.Environment;
 import android.util.Size;
+import android.widget.ImageView;
+import android.graphics.PixelFormat;
 
+import static androidx.camera.core.internal.utils.ImageUtil.createBitmapFromPlane;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
+import androidx.camera.core.impl.CameraConfig;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
@@ -26,6 +38,13 @@ import com.google.mlkit.vision.facemesh.FaceMeshDetector;
 import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions;
 import com.google.mlkit.vision.facemesh.FaceMeshPoint;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -83,11 +102,10 @@ public class MainActivity extends FlutterActivity {
 
                                             // Set up the capture use case to allow users to take photos
                                             imageAnalysis = new ImageAnalysis.Builder()
-                                                    .setTargetResolution(
-                                                            new Size(480, 360))
+                                                    
                                                     .setBackpressureStrategy(
                                                             ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                                                    .setImageQueueDepth(2)
+                                                    .setImageQueueDepth(1)
                                                     .build();
                                             imageAnalysis.setAnalyzer(getMainExecutor(), faceAnalyzer);
 
@@ -130,6 +148,7 @@ public class MainActivity extends FlutterActivity {
     }
 
 
+
     private class FaceAnalyzer implements ImageAnalysis.Analyzer {
         @Nullable
         @Override
@@ -150,6 +169,9 @@ public class MainActivity extends FlutterActivity {
         @Override
         public void analyze(@NonNull ImageProxy imageProxy) {
             @SuppressLint("UnsafeOptInUsageError") Image mediaImage = imageProxy.getImage();
+
+
+
             if (mediaImage != null) {
                 InputImage currentImage = InputImage.fromMediaImage(mediaImage, imageProxy.getImageInfo().getRotationDegrees());
 
@@ -158,33 +180,98 @@ public class MainActivity extends FlutterActivity {
                         .addOnSuccessListener(
 
                                 output -> {
-                                    // Task completed successfully
-
-                                    for (FaceMesh faceMesh : output) {
-                                        Rect bounds = faceMesh.getBoundingBox();
-                                        
-                                        // Gets all points
+                                    if(!output.isEmpty()){
+                                        FaceMesh faceMesh = output.get(0);
                                         List<FaceMeshPoint> faceMeshPoints = faceMesh.getAllPoints();
 
-                                        List<PointF3D> points = new ArrayList<>();
+                                        Rect faceBox = faceMesh.getBoundingBox();
+                                        int faceHeight = faceBox.height();
+                                        int faceWidth = faceBox.width();
+                                        int faceArea = faceHeight * faceWidth;
 
-                                        for (FaceMeshPoint faceMeshpoint : faceMeshPoints) {
+                                        @SuppressLint("UnsafeOptInUsageError") Bitmap bitmapImage = BitmapUtils.getBitmap(imageProxy);
 
-                                            PointF3D position = faceMeshpoint.getPosition();
-                                            points.add(position);
+                                        int bitmapWidth = bitmapImage.getWidth();
+                                        int bitmapHeight = bitmapImage.getHeight();
+
+//
+                                        int rightEyeTopLeft = 70; // 68
+                                        int rightEyeBottomRight = 236;
+                                        int leftEyeTopRight = 300; // 298
+                                        int leftEyeBottomLeft = 456;
+
+                                        float rightEyeTopLeftX = faceMeshPoints.get(rightEyeTopLeft).getPosition().getX();
+                                        float rightEyeTopLeftY = faceMeshPoints.get(rightEyeTopLeft).getPosition().getY();
+                                        float rightEyeBottomRightX = faceMeshPoints.get(rightEyeBottomRight).getPosition().getX();
+                                        float rightEyeBottomRightY = faceMeshPoints.get(rightEyeBottomRight).getPosition().getY();
+
+                                        int rightEyeHeight = (int) Math.abs(rightEyeTopLeftY - rightEyeBottomRightY);
+                                        int rightEyeWidth = (int) Math.abs(rightEyeTopLeftX - rightEyeBottomRightX);
+
+                                        float leftEyeTopRightX = faceMeshPoints.get(leftEyeTopRight).getPosition().getX();
+                                        float leftEyeTopRightY = faceMeshPoints.get(leftEyeTopRight).getPosition().getY();
+                                        float leftEyeBottomLeftX = faceMeshPoints.get(leftEyeBottomLeft).getPosition().getX();
+                                        float leftEyeBottomLeftY = faceMeshPoints.get(leftEyeBottomLeft).getPosition().getY();
+
+                                        int leftEyeHeight = (int) Math.abs(leftEyeTopRightY - leftEyeBottomLeftY);
+                                        int leftEyeWidth = (int) Math.abs(leftEyeTopRightX - leftEyeBottomLeftX);
+
+                                        int eyeWidth = Math.max(rightEyeWidth, leftEyeWidth);
+                                        int eyeHeight = Math.max(rightEyeHeight, leftEyeHeight);
+
+                                        int newX = (int) Math.abs(bitmapImage.getWidth() - leftEyeTopRightX - 1);
 
 
+                                        float rightCrashSize1X = rightEyeTopLeftX + eyeWidth;
+                                        float rightCrashSize1Y = rightEyeTopLeftY + eyeHeight;
+//                                        int rightCrashSize2X = Math.abs(rightEyeTopLeftX - eyeWidth);
+//                                        int rightCrashSize2Y = Math.abs(rightEyeTopLeftY - eyeHeight);
+
+                                        int leftCrashSize2X = newX + eyeWidth;
+                                        int leftCrashSize2Y = (int) (leftEyeTopRightY + eyeHeight);
+
+//                                        System.out.println("width coordinate: " + eyeWidth);
+//                                        System.out.println("height coordinate: " + eyeHeight);
+//
+//                                        System.out.println("right eye top left x : " + rightEyeTopLeftX);
+
+                                        if(rightCrashSize1X >= bitmapWidth ||
+                                                leftCrashSize2X >= bitmapWidth ||
+                                                rightCrashSize1Y >= bitmapHeight ||
+                                                leftCrashSize2Y >= bitmapHeight ||
+                                                Math.min(Math.min(rightEyeTopLeftX, rightEyeTopLeftY), Math.min(newX, leftEyeTopRightY)) < 0){
+                                            imageProxy.close();
+                                            return;
                                         }
 
-                                        System.out.println(points);
-//
-//                                                    // Gets triangle info
-//                                                    List<Triangle<FaceMeshPoint>> triangles = faceMesh.getAllTriangles();
-//                                                    for (Triangle<FaceMeshPoint> triangle : triangles) {
-//                                                        // 3 Points connecting to each other and representing a triangle area.
-//                                                        List<FaceMeshPoint> connectedPoints = triangle.getAllPoints();
-//                                                    }
+
+                                        Bitmap rightEye = Bitmap.createBitmap(bitmapImage, (int) rightEyeTopLeftX, (int) rightEyeTopLeftY, eyeWidth, eyeHeight);
+                                        Bitmap upscaledRightEye = Bitmap.createScaledBitmap(rightEye, 128, 128, false);
+
+
+                                        Matrix matrix = new Matrix();
+                                        matrix.postScale(-1, 1, bitmapImage.getWidth() / 2f, bitmapImage.getHeight() / 2f);
+
+
+                                        Bitmap rotated = Bitmap.createBitmap(bitmapImage, 0, 0, bitmapImage.getWidth(), bitmapImage.getHeight(), matrix, true);
+
+                                        Bitmap leftEye = Bitmap.createBitmap(rotated, newX, (int) leftEyeTopRightY, eyeWidth, eyeHeight);
+                                        Bitmap upscaledLeftEye = Bitmap.createScaledBitmap(leftEye, 128, 128, false);
+//                                        System.out.println(rightEye.getWidth());
+//                                        System.out.println(rightEye.getHeight());
+
+                                        saveToInternalStorage(bitmapImage, "Face.jpg");
+                                        saveToInternalStorage(upscaledLeftEye, "LeftEye.jpg");
+                                        saveToInternalStorage(upscaledRightEye, "RightEye.jpg");
+                                        String name = "RightEye.jpg";
+//                                        scaledLeftEye.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
+
+                                        //loadImageFromStorage(saveToInternalStorage(bitmapImage));
+
+
+
                                     }
+
                                     imageProxy.close();
                                 })
                         .addOnFailureListener(
@@ -195,6 +282,32 @@ public class MainActivity extends FlutterActivity {
                                 });
             }
         }
+
+    private void saveToInternalStorage(Bitmap bitmapImage, String name){
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        // path to /data/data/yourapp/app_data/imageDir
+        File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
+        // Create imageDir
+        File mypath=new File(directory, name);
+
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mypath);
+            // Use the compress method on the BitMap object to write image to the OutputStream
+            bitmapImage.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return;
+    }
+
+
     }
 
 }

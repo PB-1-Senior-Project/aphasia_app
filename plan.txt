@@ -1,10 +1,44 @@
-https://medium.com/kbtg-life/real-time-machine-learning-with-flutter-camera-bbcf1b5c3193
-https://github.com/theamorn/flutter-stream-image/blob/main/lib/main.dart
-
-TO DO:
-Throttle the camera to help with performance.
-
-
 https://dev.to/funkyidol/exploring-camerax-api-beta-part-2-image-analysis-1hha
 
 https://developer.android.com/training/camerax/architecture#additional-resources 
+
+
+TO DO TOMORROW:
+try and replicate the apps code on the fully native thing you copied and check if the images are even coherent
+Figure out how to convert image to bitmap
+
+TO DO:
+Throttle the camera to help with performance.
+Add the CNN 
+Add the SVG 
+Move a cursor on the screen with the output from the CNN and SVG 
+
+
+https://github.com/googlesamples/mlkit/tree/master/android/vision-quickstart/app/src/main/java/com/google/mlkit/vision/demo 
+FrameMetaData.java
+BitmapUtils.java 
+
+
+TO STANDARDIZE THE EYE IMAGES:
+The eye crop inputs are 128 x 128 x 3 pixels and are standardized by subtracting the mean 
+and dividing by the standard deviation of the pixel intensities in a channel-wise manner
+
+MAYBE NEED TO NORMALIZE THE EYE COORDINATES, AND MAYBE THE ANGLES AS WELL?
+
+
+Face Mesh Coordinate Map:
+https://github.com/rcsmit/python_scripts_rcsmit/blob/master/extras/Gal_Gadot_by_Gage_Skidmore_4_5000x5921_annotated_white_letters.jpg
+
+Valliappan architecture paper:
+https://www.nature.com/articles/s41467-020-18360-5#Sec18
+
+Supplementary Information:
+https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-020-18360-5/MediaObjects/41467_2020_18360_MOESM1_ESM.pdf
+
+EyeMU Paper:
+https://dl.acm.org/doi/pdf/10.1145/3462244.3479938 
+
+
+For later: 
+https://stackoverflow.com/questions/73354452/get-cursor-position-in-a-textfield 
+
