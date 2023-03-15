@@ -1,29 +1,20 @@
 package com.example.aphasia_app;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.ImageFormat;
 import android.graphics.Matrix;
 import android.graphics.Rect;
-import android.graphics.YuvImage;
 import android.media.Image;
-import android.os.Environment;
 import android.util.Size;
-import android.widget.ImageView;
-import android.graphics.PixelFormat;
 
-import static androidx.camera.core.internal.utils.ImageUtil.createBitmapFromPlane;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.camera.core.Camera;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
-import androidx.camera.core.impl.CameraConfig;
 import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
@@ -31,21 +22,15 @@ import androidx.lifecycle.LifecycleOwner;
 import com.google.android.gms.tasks.Task;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
-import com.google.mlkit.vision.common.PointF3D;
 import com.google.mlkit.vision.facemesh.FaceMesh;
 import com.google.mlkit.vision.facemesh.FaceMeshDetection;
 import com.google.mlkit.vision.facemesh.FaceMeshDetector;
 import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions;
 import com.google.mlkit.vision.facemesh.FaceMeshPoint;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
@@ -180,7 +165,9 @@ public class MainActivity extends FlutterActivity {
                         .addOnSuccessListener(
 
                                 output -> {
+                                    System.out.println("Running");
                                     if(!output.isEmpty()){
+                                        System.out.println("Detected Face");
                                         FaceMesh faceMesh = output.get(0);
                                         List<FaceMeshPoint> faceMeshPoints = faceMesh.getAllPoints();
 
@@ -224,16 +211,11 @@ public class MainActivity extends FlutterActivity {
 
                                         float rightCrashSize1X = rightEyeTopLeftX + eyeWidth;
                                         float rightCrashSize1Y = rightEyeTopLeftY + eyeHeight;
-//                                        int rightCrashSize2X = Math.abs(rightEyeTopLeftX - eyeWidth);
-//                                        int rightCrashSize2Y = Math.abs(rightEyeTopLeftY - eyeHeight);
+
 
                                         int leftCrashSize2X = newX + eyeWidth;
                                         int leftCrashSize2Y = (int) (leftEyeTopRightY + eyeHeight);
 
-//                                        System.out.println("width coordinate: " + eyeWidth);
-//                                        System.out.println("height coordinate: " + eyeHeight);
-//
-//                                        System.out.println("right eye top left x : " + rightEyeTopLeftX);
 
                                         if(rightCrashSize1X >= bitmapWidth ||
                                                 leftCrashSize2X >= bitmapWidth ||
@@ -257,17 +239,11 @@ public class MainActivity extends FlutterActivity {
 
                                         Bitmap leftEye = Bitmap.createBitmap(rotated, newX, (int) leftEyeTopRightY, eyeWidth, eyeHeight);
                                         Bitmap upscaledLeftEye = Bitmap.createScaledBitmap(leftEye, 128, 128, false);
-//                                        System.out.println(rightEye.getWidth());
-//                                        System.out.println(rightEye.getHeight());
+
 
                                         saveToInternalStorage(bitmapImage, "Face.jpg");
                                         saveToInternalStorage(upscaledLeftEye, "LeftEye.jpg");
                                         saveToInternalStorage(upscaledRightEye, "RightEye.jpg");
-                                        String name = "RightEye.jpg";
-//                                        scaledLeftEye.compress(Bitmap.CompressFormat.JPEG, 100, outputStream);
-
-                                        //loadImageFromStorage(saveToInternalStorage(bitmapImage));
-
 
 
                                     }
@@ -304,7 +280,6 @@ public class MainActivity extends FlutterActivity {
                 e.printStackTrace();
             }
         }
-        return;
     }
 
 
