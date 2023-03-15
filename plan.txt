@@ -3,9 +3,7 @@ https://dev.to/funkyidol/exploring-camerax-api-beta-part-2-image-analysis-1hha
 https://developer.android.com/training/camerax/architecture#additional-resources 
 
 
-TO DO TOMORROW:
-try and replicate the apps code on the fully native thing you copied and check if the images are even coherent
-Figure out how to convert image to bitmap
+
 
 TO DO:
 Throttle the camera to help with performance.
