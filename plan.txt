@@ -1,9 +1,3 @@
-https://dev.to/funkyidol/exploring-camerax-api-beta-part-2-image-analysis-1hha
-
-https://developer.android.com/training/camerax/architecture#additional-resources 
-
-
-
 
 TO DO:
 Throttle the camera to help with performance.
@@ -23,6 +17,8 @@ and dividing by the standard deviation of the pixel intensities in a channel-wis
 
 MAYBE NEED TO NORMALIZE THE EYE COORDINATES, AND MAYBE THE ANGLES AS WELL?
 
+GazeCapture Dataset Github:
+https://github.com/CSAILVision/GazeCapture
 
 Face Mesh Coordinate Map:
 https://github.com/rcsmit/python_scripts_rcsmit/blob/master/extras/Gal_Gadot_by_Gage_Skidmore_4_5000x5921_annotated_white_letters.jpg
@@ -36,6 +32,8 @@ https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-020-18360-5/Media
 EyeMU Paper:
 https://dl.acm.org/doi/pdf/10.1145/3462244.3479938 
 
+tensorflow lite converter:
+https://www.tensorflow.org/lite/models/convert/ 
 
 For later: 
 https://stackoverflow.com/questions/73354452/get-cursor-position-in-a-textfield 

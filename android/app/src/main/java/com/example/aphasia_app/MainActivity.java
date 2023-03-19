@@ -21,6 +21,7 @@ import com.google.android.gms.common.util.ArrayUtils;
 import com.google.android.gms.tasks.Task;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
+import com.google.mlkit.vision.common.PointF3D;
 import com.google.mlkit.vision.facemesh.FaceMesh;
 import com.google.mlkit.vision.facemesh.FaceMeshDetection;
 import com.google.mlkit.vision.facemesh.FaceMeshDetector;
@@ -159,6 +160,50 @@ public class MainActivity extends FlutterActivity {
                                         // Gets a list of all 468 points on the face mesh
                                         List<FaceMeshPoint> faceMeshPoints = faceMesh.getAllPoints();
 
+                                        int yawPoint1 = 50;
+                                        int yawPoint2 = 280;
+                                        int pitchPoint1 = 10;
+                                        int pitchPoint2 = 168;
+                                        int rollPoint1 = 151;
+                                        int rollPoint2 = 6;
+
+                                        PointF3D yawPosition1 = faceMeshPoints.get(yawPoint1).getPosition();
+                                        PointF3D yawPosition2 = faceMeshPoints.get(yawPoint2).getPosition();
+                                        PointF3D pitchPosition1 = faceMeshPoints.get(pitchPoint1).getPosition();
+                                        PointF3D pitchPosition2 = faceMeshPoints.get(pitchPoint2).getPosition();
+                                        PointF3D rollPosition1 = faceMeshPoints.get(rollPoint1).getPosition();
+                                        PointF3D rollPosition2 = faceMeshPoints.get(rollPoint2).getPosition();
+
+                                        double yaw = Math.atan((yawPosition1.getZ()-yawPosition2.getZ())/(yawPosition1.getX()-yawPosition2.getX()));
+                                        double pitch = Math.atan((pitchPosition1.getZ()-pitchPosition2.getZ())/(pitchPosition1.getY()-pitchPosition2.getY()));
+                                        pitch *= -1;
+                                        double roll = Math.atan2(rollPosition1.getX()-rollPosition2.getX(), rollPosition1.getY()-rollPosition2.getY());
+
+
+                                        if(roll < 0){
+                                            roll = Math.floor(roll/Math.PI)*Math.PI + (-1 * roll);
+                                            //roll = Math.floorMod((long) roll, (long) Math.PI);
+                                            //System.out.println(roll % Math.);
+                                        }
+                                        else{
+                                            roll = Math.PI - roll;
+                                        }
+
+                                        yaw = yaw * 180/Math.PI;
+                                        pitch = pitch * 180/Math.PI;
+                                        roll = roll * 180/Math.PI;
+
+
+//                                        System.out.println("roll: " + roll);
+//                                        System.out.println("pitch: " + pitch);
+//                                        System.out.println("yaw: " + yaw);
+
+                                        if(yaw < -25 || yaw > 25 || pitch > 40 || pitch < -20){
+                                            imageProxy.close();
+                                            System.out.println("Skipped frame, User Not Looking at Screen");
+                                            return;
+                                        }
+
                                         // Gets the bounding box size, and uses that to determine the face area
                                         Rect faceBox = faceMesh.getBoundingBox();
                                         int faceHeight = faceBox.height();
@@ -215,16 +260,15 @@ public class MainActivity extends FlutterActivity {
                                         float leftEyeBottomRightY = leftEyeBottomLeftY;
 
 
-                                        // Create 2D arrays to hold the coordinates for the left and right eye corner landmarks
-                                        float[][] coordinateArrayLeft = {{leftEyeTopLeftX, leftEyeTopLeftY},
-                                                                        {leftEyeTopRightX, leftEyeTopRightY},
-                                                                        {leftEyeBottomLeftX, leftEyeBottomLeftY},
-                                                                        {leftEyeBottomRightX, leftEyeBottomRightY}};
-
-                                        float[][] coordinateArrayRight = {{rightEyeTopLeftX, rightEyeTopLeftY},
-                                                                        {rightEyeTopRightX, rightEyeTopRightY},
-                                                                        {rightEyeBottomLeftX, rightEyeBottomLeftY},
-                                                                        {rightEyeBottomRightX, rightEyeBottomRightY}};
+                                        // Create 2D array to hold the normalized coordinates for the left and right eye corner landmarks
+                                        float[][] eyeCorners = {{leftEyeTopLeftX/bitmapWidth, leftEyeTopLeftY/bitmapHeight},
+                                                                        {leftEyeBottomRightX/bitmapWidth, leftEyeBottomRightY/bitmapHeight},
+                                                                        {rightEyeTopRightX/bitmapWidth, rightEyeTopRightY/bitmapHeight},
+                                                                        {rightEyeBottomLeftX/bitmapWidth, rightEyeBottomLeftY/bitmapHeight}};
+                                                                        //{leftEyeTopRightX, leftEyeTopRightY},
+                                                                        //{leftEyeBottomLeftX, leftEyeBottomLeftY},
+                                                                        //{rightEyeTopLeftX, rightEyeTopLeftY},
+                                                                        //{rightEyeBottomRightX, rightEyeBottomRightY}
 
                                        //System.out.println(Arrays.deepToString(coordinateArrayLeft));
                                         //System.out.println(Arrays.deepToString(coordinateArrayRight));
