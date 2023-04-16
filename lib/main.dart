@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
+
+ValueNotifier<double> fontSize = ValueNotifier<double>(60.0);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,8 +39,34 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final fieldText = TextEditingController();
+
   static const platform = MethodChannel('aphasia_app/face_mesh_method');
-  //static const _imageChannel = EventChannel('aphasia_app/face_mesh_channel');
+  static const stream = EventChannel('aphasia_app/eye_tracking_output');
+  int count = 0;
+  late StreamSubscription _subscription;
+  double _predictedX = 0.0;
+  double _predictedY = 0.0;
+
+  void _startListening() {
+    _subscription = stream.receiveBroadcastStream().listen(_listenStream);
+    print(
+        "43098520983420598234509832450983450983245098345098345098342059834509834509834250980");
+  }
+
+  void _cancelListening() {
+    _subscription.cancel();
+  }
+
+  void _listenStream(values) {
+    print("Recieved from native: $values \n");
+    debugPrint("Recieved from native: $values \n");
+    setState(() {
+      _predictedX = values[0];
+      _predictedY = values[1];
+      print(_predictedX);
+      print(_predictedY);
+    });
+  }
 
   @override
   void initState() {
@@ -56,6 +85,52 @@ class _HomePageState extends State<HomePage> {
     fieldText.clear();
   }
 
+  // Gets the word that the user is currently selecting
+  String getSelectedWord() {
+    int start = fieldText.selection.start;
+    late int end;
+    String words = fieldText.text;
+
+    if (fieldText.text.isEmpty || start == fieldText.text.length) {
+      return "";
+    }
+    if (words[start] == " ") {
+      for (int i = start; i < words.length; i--) {
+        if (words[i] != " ") {
+          start = i;
+          break;
+        }
+      }
+    }
+    for (int i = start; i >= 0; i--) {
+      if (words[i] == " " || i == 0) {
+        if (i == 0) {
+          start = 0;
+        } else {
+          start = i + 1;
+        }
+
+        break;
+      }
+    }
+    for (int i = start; i < words.length; i++) {
+      if (words[i] == " " || i == words.length - 1) {
+        if (i == words.length - 1) {
+          end = i + 1;
+        } else {
+          end = i;
+        }
+
+        break;
+      }
+    }
+
+    String selected = words.substring(start, end);
+
+    print(selected);
+    return selected;
+  }
+
   @override
   Widget build(BuildContext context) {
     // Code for the home page
@@ -68,46 +143,104 @@ class _HomePageState extends State<HomePage> {
               child: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: Center(
-                    child: TextBox(
-                  fieldText: fieldText,
-                )),
+                    // Code for the Textbox
+                    child: ValueListenableBuilder<double>(
+                        valueListenable: fontSize,
+                        builder: (context, value, child) {
+                          return SizedBox(
+                            width: 1000,
+                            height: 250,
+                            child: TextField(
+                              controller: fieldText,
+                              cursorColor: Colors.black,
+                              onTap: () {
+                                String selected = getSelectedWord();
+                                // Implement the text to speech here, have the TTS read out the value of the variable "selected"
+                                // read(selected)
+                              },
+                              style: TextStyle(
+                                  color: const Color.fromARGB(255, 0, 0, 0),
+                                  fontSize: value),
+                              maxLines: 5,
+                              decoration: const InputDecoration(
+                                filled: true,
+                                hintText: "Enter Text Here",
+                                fillColor: Color.fromARGB(255, 255, 255, 255),
+                                border: OutlineInputBorder(
+                                  borderSide: BorderSide.none,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                        child: const SettingsPage())
+                    // End of Textbox code
+                    ),
               ),
             ),
-            Row(
-              // Code for buttons
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // This button is not functional yet
-                ElevatedButton(
-                  onPressed: () {
-                    // Add the text to speech functionality here
-                  },
-                  child: const Text("Text to Speech test"),
-                ),
-                const Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                // Clears the textBox
-                ElevatedButton(
-                  onPressed: () {
-                    clearText();
-                  },
-                  child: const Text("Clear the Textbox"),
-                )
-              ],
+            Center(
+              child: Row(
+                // Code for buttons
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                  ),
+                  // Starts the face detection
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 12.0, 0),
+                    child: ElevatedButton(
+                        onPressed: () async {
+                          await platform.invokeMethod("startFaceDetection");
+                          if (count % 2 == 0) {
+                            _startListening();
+                          } else {
+                            _cancelListening();
+                          }
+                          count++;
+                        },
+                        child: const Text("Face Recognition Test")),
+                  ),
+                  // Clears the text in the textbox
+                  ElevatedButton(
+                    onPressed: () {
+                      clearText();
+                    },
+                    child: const Text("Clear the Textbox"),
+                  ),
+                ],
+              ),
             ),
+
+            // NOT IMPLEMENTED YET
+            // Code to move the cursor to where the user is looking
             Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: ElevatedButton(
-                  onPressed: () async {
-                    await platform.invokeMethod("startFaceDetection");
-                  },
-                  child: const Text("Face Recognition Test")),
+              padding: const EdgeInsets.all(8.0),
+              child: SizedBox(
+                width: 300,
+                height: 300,
+                child: Stack(
+                  children: [
+                    Positioned(
+                      left: _predictedX,
+                      top: _predictedY,
+                      child: Container(
+                        width: 50,
+                        height: 50,
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            //Text(_testMessage.toString()),
           ],
         ),
       ),
+      // Code for the bar at the top of the app
       appBar: AppBar(
         title: const Text("Visually Assisted Speech Therapy"),
         backgroundColor: const Color.fromARGB(255, 2, 189, 164),
@@ -125,83 +258,44 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  double _currentSliderValue = 60;
-
-  double getSliderValue() {
-    return _currentSliderValue.round().toDouble();
-  }
+  ValueListenable<double> textSize = ValueNotifier(60);
 
   @override
   Widget build(BuildContext context) {
     // Code for the settings page
 
     return Scaffold(
-        appBar: AppBar(
-          title: const Text("Settings"),
-        ),
-        body: Column(
-          children: [
-            const Text(
-              "NOT IMPLEMENTED YET",
-              style: TextStyle(fontSize: 32),
-            ),
-            const Padding(
-              padding: EdgeInsets.only(top: 16.0),
-              child: Text(
-                "Font Size",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Center(
-                child: Slider(
-              value: _currentSliderValue,
-              max: 100,
-              min: 10,
-              divisions: 100,
-              label: _currentSliderValue.round().toString(),
-              onChanged: (double value) {
-                setState(() {
-                  _currentSliderValue = value;
-                });
-              },
-            )),
-            const Text(
-              "The eye tracking will work better with larger values, \n 60 or higher is recommended",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
-            ),
-          ],
-        ));
-  }
-}
-
-class TextBox extends StatelessWidget {
-  const TextBox({super.key, required this.fieldText});
-
-  final TextEditingController fieldText;
-
-  @override
-  Widget build(BuildContext context) {
-    // Code for the textbox on the home page
-    return SizedBox(
-      // Text Box
-      width: 1000,
-      height: 250,
-      child: TextField(
-        controller: fieldText,
-        cursorColor: Colors.black,
-        style:
-            const TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontSize: 60),
-        maxLines: 5,
-        decoration: const InputDecoration(
-          filled: true,
-          hintText: "Enter Text Here",
-          fillColor: Color.fromARGB(255, 255, 255, 255),
-          border: OutlineInputBorder(
-            borderSide: BorderSide.none,
+      appBar: AppBar(
+        title: const Text("Settings"),
+      ),
+      body: Column(children: [
+        const Padding(
+          padding: EdgeInsets.only(top: 16.0),
+          child: Text(
+            "Font Size",
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
-      ),
+        Center(
+            // Code for changing the font size
+            child: Slider(
+          value: fontSize.value,
+          max: 100,
+          min: 10,
+          divisions: 100,
+          label: fontSize.value.toString(),
+          onChanged: (double value) {
+            setState(() {
+              fontSize.value = value.roundToDouble();
+            });
+          },
+        )),
+        const Text(
+          "The eye tracking will work better with larger values, \n 60 or higher is recommended",
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 16),
+        ),
+      ]),
     );
   }
 }

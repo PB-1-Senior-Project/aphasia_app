@@ -61,6 +61,9 @@ android {
         }
     }
     namespace 'com.example.aphasia_app'
+    buildFeatures {
+        mlModelBinding true
+    }
 }
 
 flutter {
@@ -68,6 +71,11 @@ flutter {
 }
 
 dependencies {
+    implementation 'com.google.android.gms:play-services-tflite-impl:16.0.1'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.1.0'
+    implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
+
     //implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     // testImplementation 'junit:junit:4.12'
     // androidTestImplementation 'com.android.support.test:runner:1.0.2'
@@ -81,6 +89,10 @@ dependencies {
 
     implementation "androidx.camera:camera-view:${camerax_version}"
     implementation "androidx.camera:camera-extensions:${camerax_version}"
+    implementation 'org.tensorflow:tensorflow-lite:2.3.0'
+    // implementation 'com.google.android.gms:play-services-tflite-gpu:16.1.0'
+
+
 
 
     // def cameraVersion = '1.2.0-beta02'
