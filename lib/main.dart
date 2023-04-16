@@ -1,10 +1,18 @@
+import 'dart:ui';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
 
+// Value that allows the user to change the size of the text in the textbox
 ValueNotifier<double> fontSize = ValueNotifier<double>(60.0);
+
+// Gets the screen size for use with the output of the CNN
+// Size screenSize = WidgetsBinding.instance.window.physicalSize;
+// double width = screenSize.width;
+// double height = screenSize.height;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,7 +47,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final fieldText = TextEditingController();
-
   static const platform = MethodChannel('aphasia_app/face_mesh_method');
   static const stream = EventChannel('aphasia_app/eye_tracking_output');
   int count = 0;
@@ -49,8 +56,6 @@ class _HomePageState extends State<HomePage> {
 
   void _startListening() {
     _subscription = stream.receiveBroadcastStream().listen(_listenStream);
-    print(
-        "43098520983420598234509832450983450983245098345098345098342059834509834509834250980");
   }
 
   void _cancelListening() {
@@ -58,7 +63,6 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _listenStream(values) {
-    print("Recieved from native: $values \n");
     debugPrint("Recieved from native: $values \n");
     setState(() {
       _predictedX = values[0];
@@ -133,6 +137,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    double width = MediaQuery.of(context).size.width;
+    double height = MediaQuery.of(context).size.height;
     // Code for the home page
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 69, 196, 255),
@@ -191,15 +197,16 @@ class _HomePageState extends State<HomePage> {
                     padding: const EdgeInsets.fromLTRB(0, 0, 12.0, 0),
                     child: ElevatedButton(
                         onPressed: () async {
-                          await platform.invokeMethod("startFaceDetection");
                           if (count % 2 == 0) {
                             _startListening();
                           } else {
                             _cancelListening();
                           }
                           count++;
+
+                          await platform.invokeMethod("startFaceDetection");
                         },
-                        child: const Text("Face Recognition Test")),
+                        child: const Text("Activate Eye Tracking")),
                   ),
                   // Clears the text in the textbox
                   ElevatedButton(
@@ -212,7 +219,7 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            // NOT IMPLEMENTED YET
+            // NOT WORKING WITH CNN OUTPUT
             // Code to move the cursor to where the user is looking
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -222,8 +229,8 @@ class _HomePageState extends State<HomePage> {
                 child: Stack(
                   children: [
                     Positioned(
-                      left: _predictedX,
-                      top: _predictedY,
+                      left: _predictedX * width,
+                      top: _predictedY * height,
                       child: Container(
                         width: 50,
                         height: 50,

@@ -7,9 +7,13 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Point;
 import android.graphics.Rect;
 import android.media.Image;
+import android.os.Build;
 import android.os.Handler;
+import android.view.Display;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.camera.core.Camera;
@@ -48,6 +52,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.Random;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 
@@ -60,21 +65,20 @@ import io.flutter.plugin.common.MethodChannel;
 
 
 
+
+
 public class MainActivity extends FlutterActivity {
     // Method channel name
     private static final String METHOD_CHANNEL = "aphasia_app/face_mesh_method";
 
-    public static final String STREAM = "aphasia_app/eye_tracking_output";
-    private EventChannel.EventSink attachEvent;
-    final String TAG_NAME = "From_Native";
-//    private int count = 1;
-    private Handler handler;
+    public static final String EVENT_CHANNEL = "aphasia_app/eye_tracking_output";
+
 
     // Boolean variable describing if the camera is initialized or not
     private boolean isInitialized = false;
 
-    public float[] predicted;
-    EventChannel.EventSink eyeEventSink;
+    public float[] predicted = new float[2];
+
     private ProcessCameraProvider cameraProvider;
 
     private ImageAnalysis imageAnalysis;
@@ -90,70 +94,51 @@ public class MainActivity extends FlutterActivity {
     private Model eyeModel;
     private String modelName = "model.tflite";
 
+    private EventChannel.EventSink attachEvent;
+    private Handler handler;
+
     private final Runnable runnable = new Runnable() {
         @Override
         public void run() {
-                Log.w(TAG_NAME, "\nParsing From Native:  " + predicted);
-                attachEvent.success(predicted);
-
-
-            handler.postDelayed(this, 100);
+            if(attachEvent == null){
+                System.out.println("oops");
+                return;
+            }
+            attachEvent.success(predicted);
+            handler.postDelayed(this, 500);
         }
     };
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        handler.removeCallbacks(runnable);
-        handler = null;
-        attachEvent = null;
-    }
-    //@SuppressLint("UnsafeOptInUsageError")
+
     @Override
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
         super.configureFlutterEngine(flutterEngine);
 
-//        new EventChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), STREAM).setStreamHandler(
-//                new EventChannel.StreamHandler() {
-//                    @Override
-//                    public void onListen(Object arguments, EventChannel.EventSink events) {
-//                        eyeEventSink = events;
-//                    }
-//
-//                    @Override
-//                    public void onCancel(Object arguments) {
-//                        eyeEventSink = null;
-//                    }
-//
-//                    @
-//                }
-//        );
-
-        new EventChannel(Objects.requireNonNull(getFlutterEngine()).getDartExecutor().getBinaryMessenger(), STREAM).setStreamHandler(
+        new EventChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), EVENT_CHANNEL).setStreamHandler(
                 new EventChannel.StreamHandler() {
+
                     @Override
-                    public void onListen(Object args, final EventChannel.EventSink events) {
-                        Log.w(TAG_NAME, "Adding listener");
+                    public void onListen(Object arguments, EventChannel.EventSink events) {
+
                         attachEvent = events;
-                        System.out.println("OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
                         handler = new Handler();
                         runnable.run();
+
+
                     }
 
                     @Override
-                    public void onCancel(Object args) {
-                        Log.w(TAG_NAME, "Cancelling listener");
+                    public void onCancel(Object arguments) {
+
                         handler.removeCallbacks(runnable);
                         handler = null;
-
                         attachEvent = null;
-                        System.out.println("StreamHandler - onCanceled: ");
+                        System.out.println("Stream Canceled");
                     }
 
 
                 }
         );
-
 
 
         new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), METHOD_CHANNEL)
@@ -216,7 +201,7 @@ public class MainActivity extends FlutterActivity {
                                 else { // Stops the camera if it is already initialized
                                     cameraProvider.unbindAll();
                                     imageAnalysis.clearAnalyzer();
-                                    onDestroy();
+                                    
 
 //                                    try{
 //                                        eyeModel.close();
@@ -519,8 +504,16 @@ public class MainActivity extends FlutterActivity {
                                         float[] outputArray = outputFeature0.getFloatArray();
 //                                        outputArray[0] = outputArray[0] * Resources.getSystem().getDisplayMetrics().widthPixels;
 //                                        outputArray[1] = outputArray[1] * Resources.getSystem().getDisplayMetrics().heightPixels;
+                                        Random rand = new Random();
+                                        float[] testArray = new float[2];
+                                        testArray[0] = (float) Math.random();
+                                        testArray[1] = (float) Math.random();
 
-                                        predicted = outputArray;
+                                        predicted = testArray;
+
+                                        runnable.run();
+                                        // Fix back
+                                        // predicted = outputArray;
 //                                        System.out.println(outputArray[0] + ", " + outputArray[1]);
 //
 //                                        System.out.println();
