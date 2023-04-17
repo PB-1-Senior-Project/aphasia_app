@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -51,8 +49,8 @@ class _HomePageState extends State<HomePage> {
   static const stream = EventChannel('aphasia_app/eye_tracking_output');
   int count = 0;
   late StreamSubscription _subscription;
-  double _predictedX = 0.0;
-  double _predictedY = 0.0;
+  double _predictedX = 1.0;
+  double _predictedY = 1.0;
 
   void _startListening() {
     _subscription = stream.receiveBroadcastStream().listen(_listenStream);
@@ -63,12 +61,9 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _listenStream(values) {
-    debugPrint("Recieved from native: $values \n");
     setState(() {
       _predictedX = values[0];
       _predictedY = values[1];
-      print(_predictedX);
-      print(_predictedY);
     });
   }
 
@@ -140,120 +135,112 @@ class _HomePageState extends State<HomePage> {
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
     // Code for the home page
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 69, 196, 255),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Center(
-                    // Code for the Textbox
-                    child: ValueListenableBuilder<double>(
-                        valueListenable: fontSize,
-                        builder: (context, value, child) {
-                          return SizedBox(
-                            width: 1000,
-                            height: 250,
-                            child: TextField(
-                              controller: fieldText,
-                              cursorColor: Colors.black,
-                              onTap: () {
-                                String selected = getSelectedWord();
-                                // Implement the text to speech here, have the TTS read out the value of the variable "selected"
-                                // read(selected)
-                              },
-                              style: TextStyle(
-                                  color: const Color.fromARGB(255, 0, 0, 0),
-                                  fontSize: value),
-                              maxLines: 5,
-                              decoration: const InputDecoration(
-                                filled: true,
-                                hintText: "Enter Text Here",
-                                fillColor: Color.fromARGB(255, 255, 255, 255),
-                                border: OutlineInputBorder(
-                                  borderSide: BorderSide.none,
+    return Stack(children: [
+      Scaffold(
+        backgroundColor: const Color.fromARGB(255, 69, 196, 255),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                      // Code for the Textbox
+                      child: ValueListenableBuilder<double>(
+                          valueListenable: fontSize,
+                          builder: (context, value, child) {
+                            return SizedBox(
+                              width: 1000,
+                              height: 250,
+                              child: TextField(
+                                controller: fieldText,
+                                cursorColor: Colors.black,
+                                onTap: () {
+                                  String selected = getSelectedWord();
+                                  // Implement the text to speech here, have the TTS read out the value of the variable "selected"
+                                  // read(selected)
+                                },
+                                style: TextStyle(
+                                    color: const Color.fromARGB(255, 0, 0, 0),
+                                    fontSize: value),
+                                maxLines: 5,
+                                decoration: const InputDecoration(
+                                  filled: true,
+                                  hintText: "Enter Text Here",
+                                  fillColor: Color.fromARGB(255, 255, 255, 255),
+                                  border: OutlineInputBorder(
+                                    borderSide: BorderSide.none,
+                                  ),
                                 ),
                               ),
-                            ),
-                          );
-                        },
-                        child: const SettingsPage())
-                    // End of Textbox code
-                    ),
-              ),
-            ),
-            Center(
-              child: Row(
-                // Code for buttons
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8.0),
-                  ),
-                  // Starts the face detection
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(0, 0, 12.0, 0),
-                    child: ElevatedButton(
-                        onPressed: () async {
-                          if (count % 2 == 0) {
-                            _startListening();
-                          } else {
-                            _cancelListening();
-                          }
-                          count++;
-
-                          await platform.invokeMethod("startFaceDetection");
-                        },
-                        child: const Text("Activate Eye Tracking")),
-                  ),
-                  // Clears the text in the textbox
-                  ElevatedButton(
-                    onPressed: () {
-                      clearText();
-                    },
-                    child: const Text("Clear the Textbox"),
-                  ),
-                ],
-              ),
-            ),
-
-            // NOT WORKING WITH CNN OUTPUT
-            // Code to move the cursor to where the user is looking
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: SizedBox(
-                width: 300,
-                height: 300,
-                child: Stack(
-                  children: [
-                    Positioned(
-                      left: _predictedX * width,
-                      top: _predictedY * height,
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
+                            );
+                          },
+                          child: const SettingsPage())
+                      // End of Textbox code
                       ),
+                ),
+              ),
+              Center(
+                child: Row(
+                  // Code for buttons
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Padding(
+                      padding: EdgeInsets.all(8.0),
+                    ),
+                    // Starts the face detection
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(0, 0, 12.0, 0),
+                      child: ElevatedButton(
+                          onPressed: () async {
+                            if (count % 2 == 0) {
+                              _startListening();
+                            } else {
+                              _cancelListening();
+                            }
+                            count++;
+
+                            await platform.invokeMethod("startFaceDetection");
+                          },
+                          child: const Text("Activate Eye Tracking")),
+                    ),
+                    // Clears the text in the textbox
+                    ElevatedButton(
+                      onPressed: () {
+                        clearText();
+                      },
+                      child: const Text("Clear the Textbox"),
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
+
+        // Code for the bar at the top of the app
+        appBar: AppBar(
+          title: const Text("Visually Assisted Speech Therapy"),
+          backgroundColor: const Color.fromARGB(255, 2, 189, 164),
+        ),
+        drawer: const Menu(),
       ),
-      // Code for the bar at the top of the app
-      appBar: AppBar(
-        title: const Text("Visually Assisted Speech Therapy"),
-        backgroundColor: const Color.fromARGB(255, 2, 189, 164),
-      ),
-      drawer: const Menu(),
-    );
+
+      // NOT WORKING WITH CNN OUTPUT
+      // Code for the cursor that follows the user's gaze
+      Positioned(
+        top: _predictedX * (height - 50),
+        left: _predictedY * (width - 50),
+        child: Container(
+          width: 50,
+          height: 50,
+          decoration: const BoxDecoration(
+            color: Colors.red,
+            shape: BoxShape.circle,
+          ),
+        ),
+      )
+    ]);
   }
 }
 

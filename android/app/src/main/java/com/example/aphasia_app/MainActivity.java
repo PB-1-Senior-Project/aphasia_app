@@ -2,18 +2,11 @@ package com.example.aphasia_app;
 
 import android.content.Context;
 import android.content.ContextWrapper;
-import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.graphics.Point;
 import android.graphics.Rect;
 import android.media.Image;
-import android.os.Build;
 import android.os.Handler;
-import android.view.Display;
-import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.camera.core.Camera;
@@ -25,10 +18,9 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LifecycleOwner;
 
-import com.example.aphasia_app.ml.Model;
-import com.google.android.gms.common.util.ArrayUtils;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tflite.client.TfLiteInitializationOptions;
+
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.common.PointF3D;
@@ -39,21 +31,17 @@ import com.google.mlkit.vision.facemesh.FaceMeshDetectorOptions;
 import com.google.mlkit.vision.facemesh.FaceMeshPoint;
 
 import org.tensorflow.lite.DataType;
-import org.tensorflow.lite.TensorFlowLite;
+
 import org.tensorflow.lite.support.image.TensorImage;
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer;
 
-
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 import java.util.Random;
-import java.util.Vector;
 import java.util.concurrent.ExecutionException;
 
 import io.flutter.Log;
@@ -91,8 +79,25 @@ public class MainActivity extends FlutterActivity {
             new FaceMeshDetectorOptions.Builder().setUseCase(1).build()
     );
 
-    private Model eyeModel;
-    private String modelName = "model.tflite";
+
+    //private Model eyeModel;
+    private final String modelPath = "android/app/src/main/ml/model.tflite";
+//    private InterpreterApi interpreter;
+//
+//    Task<Void> initializeTask = TfLite.initialize(getApplicationContext(), options).addOnSuccessListener(a -> {
+//        interpreter = InterpreterApi.create(new File(modelPath), new InterpreterApi.Options().setRuntime(InterpreterApi.Options.TfLiteRuntime.PREFER_SYSTEM_OVER_APPLICATION).addDelegateFactory(new GpuDelegateFactory()));
+//
+//    }).addOnFailureListener(e -> {
+//        Log.e("Interpreter", String.format("Cannot Initialize Interpreter"));
+//    });
+
+
+
+
+
+
+
+    //Interpreter interpreter = new Interpreter(new File(modelPath));
 
     private EventChannel.EventSink attachEvent;
     private Handler handler;
@@ -105,7 +110,7 @@ public class MainActivity extends FlutterActivity {
                 return;
             }
             attachEvent.success(predicted);
-            handler.postDelayed(this, 500);
+            handler.postDelayed(this, 200);
         }
     };
 
@@ -180,13 +185,13 @@ public class MainActivity extends FlutterActivity {
                                                     ((LifecycleOwner) this),
                                                     cameraSelector,
                                                     imageAnalysis);
-                                            try {
-                                                eyeModel = Model.newInstance(getApplicationContext());
-
-
-                                            } catch (IOException e) {
-                                                // TODO Handle the exception
-                                            }
+//                                            try {
+//                                                //eyeModel = Model.newInstance(getApplicationContext());
+//
+//
+//                                            } catch (IOException e) {
+//                                                // TODO Handle the exception
+//                                            }
 
 
                                         } catch (InterruptedException | ExecutionException e) {
@@ -201,7 +206,7 @@ public class MainActivity extends FlutterActivity {
                                 else { // Stops the camera if it is already initialized
                                     cameraProvider.unbindAll();
                                     imageAnalysis.clearAnalyzer();
-                                    
+
 
 //                                    try{
 //                                        eyeModel.close();
@@ -268,27 +273,27 @@ public class MainActivity extends FlutterActivity {
                                         PointF3D yawPosition2 = faceMeshPoints.get(yawPoint2).getPosition();
                                         PointF3D pitchPosition1 = faceMeshPoints.get(pitchPoint1).getPosition();
                                         PointF3D pitchPosition2 = faceMeshPoints.get(pitchPoint2).getPosition();
-                                        PointF3D rollPosition1 = faceMeshPoints.get(rollPoint1).getPosition();
-                                        PointF3D rollPosition2 = faceMeshPoints.get(rollPoint2).getPosition();
+//                                        PointF3D rollPosition1 = faceMeshPoints.get(rollPoint1).getPosition();
+//                                        PointF3D rollPosition2 = faceMeshPoints.get(rollPoint2).getPosition();
 
                                         double yaw = Math.atan((yawPosition1.getZ()-yawPosition2.getZ())/(yawPosition1.getX()-yawPosition2.getX()));
                                         double pitch = Math.atan((pitchPosition1.getZ()-pitchPosition2.getZ())/(pitchPosition1.getY()-pitchPosition2.getY()));
                                         pitch *= -1;
-                                        double roll = Math.atan2(rollPosition1.getX()-rollPosition2.getX(), rollPosition1.getY()-rollPosition2.getY());
+                                        //double roll = Math.atan2(rollPosition1.getX()-rollPosition2.getX(), rollPosition1.getY()-rollPosition2.getY());
 
 
-                                        if(roll < 0){
-                                            roll = Math.floor(roll/Math.PI)*Math.PI + (-1 * roll);
-                                            //roll = Math.floorMod((long) roll, (long) Math.PI);
-                                            //System.out.println(roll % Math.);
-                                        }
-                                        else{
-                                            roll = Math.PI - roll;
-                                        }
+//                                        if(roll < 0){
+//                                            roll = Math.floor(roll/Math.PI)*Math.PI + (-1 * roll);
+//                                            //roll = Math.floorMod((long) roll, (long) Math.PI);
+//                                            //System.out.println(roll % Math.);
+//                                        }
+//                                        else{
+//                                            roll = Math.PI - roll;
+//                                        }
 
                                         yaw = yaw * 180/Math.PI;
                                         pitch = pitch * 180/Math.PI;
-                                        roll = roll * 180/Math.PI;
+                                        //roll = roll * 180/Math.PI;
 
 
 //                                        System.out.println("roll: " + roll);
@@ -305,7 +310,7 @@ public class MainActivity extends FlutterActivity {
                                         Rect faceBox = faceMesh.getBoundingBox();
                                         int faceHeight = faceBox.height();
                                         int faceWidth = faceBox.width();
-                                        int faceArea = faceHeight * faceWidth;
+                                        //int faceArea = faceHeight * faceWidth;
 
 
                                         // Turns the image proxy into a bitmap so it can be easily manipulated
@@ -498,10 +503,38 @@ public class MainActivity extends FlutterActivity {
 
                                         // Runs model inference and gets result.
 
-                                        Model.Outputs modelOutput = eyeModel.process(inputFeature0, inputFeature1, inputFeature2);
+                                        //Model.Outputs modelOutput = eyeModel.process(inputFeature0, inputFeature1, inputFeature2);
 
-                                        TensorBuffer outputFeature0 = modelOutput.getOutputFeature0AsTensorBuffer();
-                                        float[] outputArray = outputFeature0.getFloatArray();
+                                        //TensorBuffer outputFeature0 = modelOutput.getOutputFeature0AsTensorBuffer();
+
+
+
+                                        Map <Integer, Object> map_of_indices_to_outputs = new HashMap();
+                                        Object[] inputs = {inputFeature0, inputFeature1, inputFeature2};
+
+
+                                        Map<Integer, Object> outputs = new HashMap<>();
+                                        outputs.put(0, "output1");
+                                        //interpreter.run(inputs, outputs);
+                                        //System.out.println(outputs.get(0));
+//                                        //interpreter.runForMultipleInputsOutputs(inputs, outputs);
+//
+//
+//                                        FloatBuffer ith_output = FloatBuffer.allocate(1 * 2);  // Float tensor, shape 3x2x4.
+//                                        //ByteOrder.nativeOrder();
+//                                        ith_output.order();
+//
+//                                        map_of_indices_to_outputs.put(0, ith_output);
+//                                        interpreter.runForMultipleInputsOutputs(inputs, map_of_indices_to_outputs);
+
+
+
+
+
+
+
+
+                                        //float[] outputArray = outputFeature0.getFloatArray();
 //                                        outputArray[0] = outputArray[0] * Resources.getSystem().getDisplayMetrics().widthPixels;
 //                                        outputArray[1] = outputArray[1] * Resources.getSystem().getDisplayMetrics().heightPixels;
                                         Random rand = new Random();
@@ -511,7 +544,7 @@ public class MainActivity extends FlutterActivity {
 
                                         predicted = testArray;
 
-                                        runnable.run();
+                                        //runnable.run();
                                         // Fix back
                                         // predicted = outputArray;
 //                                        System.out.println(outputArray[0] + ", " + outputArray[1]);
