@@ -8,7 +8,7 @@ if (localPropertiesFile.exists()) {
 
 def flutterRoot = localProperties.getProperty('flutter.sdk')
 if (flutterRoot == null) {
-    throw new GradleException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
+    throw new FileNotFoundException("Flutter SDK not found. Define location with flutter.sdk in the local.properties file.")
 }
 
 def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
@@ -38,16 +38,16 @@ android {
         jvmTarget = '1.8'
     }
 
-    sourceSets {
-        main.java.srcDirs += 'src/main/kotlin'
-    }
+    // sourceSets {
+    //     main.java.srcDirs += 'src/main/java'
+    // }
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.example.aphasia_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdkVersion 21 // Change to 29 if necessary
+        minSdkVersion 28 // Change to 29 if necessary
         targetSdkVersion 29 //flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
@@ -60,6 +60,10 @@ android {
             signingConfig signingConfigs.debug
         }
     }
+    namespace 'com.example.aphasia_app'
+    buildFeatures {
+        mlModelBinding true
+    }
 }
 
 flutter {
@@ -67,5 +71,34 @@ flutter {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    implementation 'com.google.android.gms:play-services-tflite-impl:16.0.1'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.1.0'
+    implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0'
+    implementation 'org.tensorflow:tensorflow-lite-gpu:2.3.0'
+
+    //implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    // testImplementation 'junit:junit:4.12'
+    // androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    // androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+    
+    def camerax_version =  "1.2.1" // "1.1.0-beta01"
+    implementation "androidx.camera:camera-core:${camerax_version}"
+    implementation "androidx.camera:camera-camera2:${camerax_version}"
+    implementation "androidx.camera:camera-lifecycle:${camerax_version}"
+    implementation "androidx.camera:camera-video:${camerax_version}"
+
+    implementation "androidx.camera:camera-view:${camerax_version}"
+    implementation "androidx.camera:camera-extensions:${camerax_version}"
+    implementation 'org.tensorflow:tensorflow-lite:2.3.0'
+    // implementation 'com.google.android.gms:play-services-tflite-gpu:16.1.0'
+
+
+
+
+    // def cameraVersion = '1.2.0-beta02'
+    implementation 'com.google.mlkit:face-mesh-detection:16.0.0-beta1'
+    // implementation 'androidx.camera:camera-core:1.0.2'
+    // implementation 'androidx.camera:camera-view:1.1.0-beta02'     //implementation 'androidx.camera:camera-view:1.1.0-beta02'
+
+    // implementation 'androidx.camera:camera-lifecycle:1.0.2'
 }

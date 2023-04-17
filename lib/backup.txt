@@ -1,0 +1,87 @@
+Column(
+          children: [
+            const Text(
+              "NOT IMPLEMENTED YET",
+              style: TextStyle(fontSize: 32),
+            ),
+            const Padding(
+              padding: EdgeInsets.only(top: 16.0),
+              child: Text(
+                "Font Size",
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+            Center(
+                child: Slider(
+              value: _currentSliderValue,
+              max: 100,
+              min: 10,
+              divisions: 100,
+              label: _currentSliderValue.round().toString(),
+              onChanged: (double value) {
+                setState(() {
+                  _currentSliderValue = value;
+                  fontSize.value = value as int;
+                });
+              },
+            )),
+            const Text(
+              "The eye tracking will work better with larger values, \n 60 or higher is recommended",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            // class TextBox extends StatelessWidget {
+//   const TextBox({super.key, required this.fieldText});
+
+//   final TextEditingController fieldText;
+//   final ValueListenable<double> fontSize;
+
+//   @override
+//   Widget build(BuildContext context) {
+//     // Code for the textbox on the home page
+//     return SizedBox(
+//       // Text Box
+//       width: 1000,
+//       height: 250,
+//       child: TextField(
+//         controller: fieldText,
+//         cursorColor: Colors.black,
+//         onTap: () {
+//           String selected = getSelectedWord();
+//           // Implement the text to speech here, have the TTS read out the value of the variable "selected"
+//           // read(selected)
+//         },
+//         style: TextStyle(
+//             color: const Color.fromARGB(255, 0, 0, 0),
+//             fontSize: fontSize.value),
+//         maxLines: 5,
+//         decoration: const InputDecoration(
+//           filled: true,
+//           hintText: "Enter Text Here",
+//           fillColor: Color.fromARGB(255, 255, 255, 255),
+//           border: OutlineInputBorder(
+//             borderSide: BorderSide.none,
+//           ),
+//         ),
+//       ),
+//     );
+//   }
+
+//   // Gets the word that is currently selected for use in the Text-To-Speech
+
+// }
