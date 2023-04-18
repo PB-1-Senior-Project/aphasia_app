@@ -7,11 +7,6 @@ import 'package:flutter_tts/flutter_tts.dart';
 // Value that allows the user to change the size of the text in the textbox
 ValueNotifier<double> fontSize = ValueNotifier<double>(60.0);
 
-// Gets the screen size for use with the output of the CNN
-// Size screenSize = WidgetsBinding.instance.window.physicalSize;
-// double width = screenSize.width;
-// double height = screenSize.height;
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -44,26 +39,44 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  // Controller for the textbox
   final fieldText = TextEditingController();
+
+  // Channels for the face detection
   static const platform = MethodChannel('aphasia_app/face_mesh_method');
   static const stream = EventChannel('aphasia_app/eye_tracking_output');
-  int count = 0;
-  late StreamSubscription _subscription;
-  double _predictedX = 1.0;
-  double _predictedY = 1.0;
 
+  // Keeps track of whether the eye tracking is on or off
+  int count = 0;
+
+  // Variable for the stream subscription
+  late StreamSubscription _subscription;
+
+  // Variables for the predicted eye position
+  double _predictedX = 2.0;
+  double _predictedY = 2.0;
+
+  // Start listening to the event stream
   void _startListening() {
     _subscription = stream.receiveBroadcastStream().listen(_listenStream);
   }
 
+  // Cancel listening to the event stream and move the red circle off the screen
   void _cancelListening() {
     _subscription.cancel();
+    setState(() {
+      _predictedX = 2.0;
+      _predictedY = 2.0;
+    });
   }
 
+  // Get the values from the event stream
   void _listenStream(values) {
     setState(() {
       _predictedX = values[0];
       _predictedY = values[1];
+      // print(_predictedX);
+      // print(_predictedY);
     });
   }
 
@@ -75,7 +88,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     fieldText.dispose();
-
     super.dispose();
   }
 
@@ -126,14 +138,16 @@ class _HomePageState extends State<HomePage> {
 
     String selected = words.substring(start, end);
 
-    print(selected);
+    //print(selected);
     return selected;
   }
 
   @override
   Widget build(BuildContext context) {
+    // Screen height and width
     double width = MediaQuery.of(context).size.width;
     double height = MediaQuery.of(context).size.height;
+
     // Code for the home page
     return Stack(children: [
       Scaffold(
@@ -193,6 +207,7 @@ class _HomePageState extends State<HomePage> {
                       padding: const EdgeInsets.fromLTRB(0, 0, 12.0, 0),
                       child: ElevatedButton(
                           onPressed: () async {
+                            // Code to either start or stop the eye tracking
                             if (count % 2 == 0) {
                               _startListening();
                             } else {
@@ -228,6 +243,7 @@ class _HomePageState extends State<HomePage> {
 
       // NOT WORKING WITH CNN OUTPUT
       // Code for the cursor that follows the user's gaze
+      // Need to add functionality to allow this to work as a cursor
       Positioned(
         top: _predictedX * (height - 50),
         left: _predictedY * (width - 50),
@@ -257,7 +273,6 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     // Code for the settings page
-
     return Scaffold(
       appBar: AppBar(
         title: const Text("Settings"),
