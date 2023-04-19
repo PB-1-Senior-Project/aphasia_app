@@ -215,12 +215,17 @@ public class MainActivity extends FlutterActivity {
                                         PointF3D pitchPosition1 = faceMeshPoints.get(pitchPoint1).getPosition();
                                         PointF3D pitchPosition2 = faceMeshPoints.get(pitchPoint2).getPosition();
 
+                                        System.out.println("Face Detected");
+
                                         // Calculate the yaw and pitch
                                         double yaw = Math.atan((yawPosition1.getZ()-yawPosition2.getZ())/(yawPosition1.getX()-yawPosition2.getX()));
                                         double pitch = Math.atan((pitchPosition1.getZ()-pitchPosition2.getZ())/(pitchPosition1.getY()-pitchPosition2.getY()));
                                         pitch *= -1;
                                         yaw = yaw * 180/Math.PI;
                                         pitch = pitch * 180/Math.PI;
+
+                                        System.out.println("Yaw: " + yaw);
+                                        System.out.println("Pitch: " + pitch);
 
                                         // If the user isn't looking at the screen, skip the rest of the processing to save on resources
                                         if(yaw < -25 || yaw > 25 || pitch > 40 || pitch < -20){
@@ -339,10 +344,10 @@ public class MainActivity extends FlutterActivity {
                                         float[] outputArray = outputFeature0.getFloatArray();
 
                                         // Just filler code until the CNN works correctly
-                                        float[] testArray = new float[2];
-                                        testArray[0] = (float) Math.random();
-                                        testArray[1] = (float) Math.random();
-                                        predicted = testArray;
+                                        // float[] testArray = new float[2];
+                                        // testArray[0] = (float) Math.random();
+                                        // testArray[1] = (float) Math.random();
+                                        // predicted = testArray;
 
                                         // Used in the actual code to help send the output back to Flutter
                                         // Commented out until the CNN works correctly
