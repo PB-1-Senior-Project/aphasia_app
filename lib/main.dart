@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:wav/wav.dart';
 
 // Value that allows the user to change the size of the text in the textbox
@@ -315,6 +316,12 @@ class _HomePageState extends State<HomePage> {
                       padding: const EdgeInsets.fromLTRB(0, 0, 12.0, 0),
                       child: ElevatedButton(
                           onPressed: () async {
+                            var status = await Permission.camera.status;
+
+                            if (!status.isGranted) {
+                              await Permission.camera.request();
+                            }
+
                             // Code to either start or stop the eye tracking
                             if (count % 2 == 0) {
                               _startListening();
