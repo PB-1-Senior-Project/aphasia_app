@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:wav/wav.dart';
 
 // Value that allows the user to change the size of the text in the textbox
 ValueNotifier<double> fontSize = ValueNotifier<double>(60.0);
@@ -83,12 +86,19 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    initTts();
   }
 
   @override
   void dispose() {
     fieldText.dispose();
     super.dispose();
+    _flutterTts.stop();
+  }
+
+  initTts() async {
+    _flutterTts = FlutterTts();
+    await _flutterTts.awaitSpeakCompletion(true);
   }
 
   // Clears the text in the textbox
@@ -142,6 +152,103 @@ class _HomePageState extends State<HomePage> {
     return selected;
   }
 
+  late FlutterTts _flutterTts;
+  String? _tts;
+
+  final player = AudioPlayer();
+  final note = AudioPlayer();
+
+  // Tries the speak function until it works properly
+  Future trySpeak(String word) async {
+    if (word == "") {
+      return;
+    }
+    bool success = false;
+    while (!success) {
+      try {
+        success = await speak(word);
+      } on FormatException catch (_) {
+        success = false;
+      }
+      //print(success);
+    }
+  }
+
+  // Breaks a word down into syllables and reads out the word with notes behind each syllable
+  Future speak(String word) async {
+    await _flutterTts.setVolume(1);
+    await _flutterTts.setSpeechRate(0.1);
+    await _flutterTts.setPitch(1);
+    _tts = word;
+
+    if (_tts != null) {
+      if (_tts!.isNotEmpty) {
+        await _flutterTts.synthesizeToFile(_tts!, 'tts.wav');
+        final ttsDir = await getExternalStorageDirectory();
+        String ttsPath = ttsDir!.path + "/tts.wav";
+        final wav = await Wav.readFile(ttsPath);
+        final condensed_data = <double>[];
+        final condensed_time = <double>[];
+        String data = "";
+        for (var i = 0; i < wav.channels[0].length; i += 500) {
+          if (i + 400 < wav.channels[0].length) {
+            double average = 0;
+            for (var x = 0; x < 5; x++) {
+              average += wav.channels[0][i + (100 * x)].abs();
+            }
+            average = average / 5;
+            condensed_data.add(average);
+            double time = i / 24000;
+            condensed_time.add(time);
+            data += time.toStringAsFixed(2) + ": " + average.toString() + "\n";
+          }
+        }
+        List<List<double>> syllables = [];
+        bool lookingForStop = false;
+        for (var i = 0; i < condensed_data.length; i++) {
+          if (lookingForStop) {
+            if (condensed_data[i].abs() < 0.01) {
+              if (i + 1 < condensed_data.length &&
+                  condensed_data[i + 1].abs() < 0.01) {
+                syllables[syllables.length - 1].add(condensed_time[i]);
+                lookingForStop = false;
+              }
+            }
+          } else {
+            if (condensed_data[i].abs() >= 0.01) {
+              syllables.add([condensed_time[i]]);
+              lookingForStop = true;
+            }
+          }
+        }
+        //print(data);
+        //print(syllables);
+        await Future.delayed(const Duration(milliseconds: 500));
+        final notes = <String>['g4.mp3', 'f4.mp3', 'e4.mp3', 'd4.mp3'];
+        int current_note = 1;
+        player.play(DeviceFileSource(ttsPath), volume: .25);
+        await Future.delayed(
+            Duration(milliseconds: (syllables[0][0] * 1000).round()));
+
+        note.play(AssetSource(notes[0]));
+        for (var i = 1; i < syllables.length; i++) {
+          await Future.delayed(
+              Duration(
+                  milliseconds: (syllables[i][0] * 1000).round() -
+                      syllables[i - 1][0].round()),
+              () {});
+          note.play(AssetSource(notes[current_note]));
+          current_note++;
+          if (current_note == 4) {
+            current_note = 0;
+          }
+        }
+        return true;
+      }
+    }
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
     // Screen height and width
@@ -171,6 +278,7 @@ class _HomePageState extends State<HomePage> {
                                 cursorColor: Colors.black,
                                 onTap: () {
                                   String selected = getSelectedWord();
+                                  trySpeak(selected);
                                   // Implement the text to speech here, have the TTS read out the value of the variable "selected"
                                   // read(selected)
                                 },
