@@ -360,8 +360,9 @@ class _HomePageState extends State<HomePage> {
       // Code for the cursor that follows the user's gaze
       // Need to add functionality to allow this to work as a cursor
       Positioned(
-        top: _predictedX * (height - 50),
-        left: _predictedY * (width - 50),
+        // Commenting out the variables for the demo video to hide the red circle, change back when we have the CNN output
+        top: 2.0 * (height - 50), //_predictedX * (height - 50),
+        left: 2.0 * (width - 50), //_predictedY * (width - 50),
         child: Container(
           width: 50,
           height: 50,
