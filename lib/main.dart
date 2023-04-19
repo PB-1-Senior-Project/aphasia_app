@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
+import 'settings.dart';
+import 'about.dart';
+import 'stream.dart';
+
+//StreamController<ThemeData> currentTheme = StreamController ();
 
 void main() {
   runApp(const MainApp());
@@ -9,8 +15,17 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: HomePage(),
+    return StreamBuilder<ThemeData>(
+      initialData: lightTheme,
+      stream: currentTheme.stream,
+      builder: (context, snapshot) {
+        return MaterialApp (
+          home: const HomePage(),
+          theme: snapshot.data,
+          darkTheme: darkTheme,
+          themeMode: ThemeMode.light,
+        );
+      }
     );
   }
 }
@@ -46,7 +61,7 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 69, 196, 255),
+      //backgroundColor: const Color.fromARGB(255, 69, 196, 255),
       // bottomNavigationBar: BottomNavigationBar(
       //   items: const <BottomNavigationBarItem>[
       //     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
@@ -70,6 +85,8 @@ class _HomePageState extends State<HomePage> {
               ElevatedButton(
                 // This button is not functional yet
                 onPressed: () {
+                  print (ThemeData.light(useMaterial3: true));
+
                   // Add the text to speech functionality here
                 },
                 child: const Text("Text to Speech test"),
@@ -90,33 +107,14 @@ class _HomePageState extends State<HomePage> {
       ),
       appBar: AppBar(
         title: const Text("Visually Assisted Speech Therapy"),
-        backgroundColor: const Color.fromARGB(255, 2, 189, 164),
+        //backgroundColor: const Color.fromARGB(255, 2, 189, 164),
       ),
       drawer: const OptionsMenu(),
     );
   }
 }
 
-class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
-
-  @override
-  State<SettingsPage> createState() => _SettingsPageState();
-}
-
-class _SettingsPageState extends State<SettingsPage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text("Settings"),
-        ),
-        body: Center(child: Text("HI") //Slider(value: double,)
-            ));
-  }
-}
-
-class TextBox extends StatelessWidget {
+class TextBox extends StatefulWidget {
   const TextBox({
     super.key,
     required this.fieldText,
@@ -125,17 +123,27 @@ class TextBox extends StatelessWidget {
   final TextEditingController fieldText;
 
   @override
+  State<TextBox> createState() => _TextBoxState();
+}
+
+class _TextBoxState extends State<TextBox> {
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
       // Text Box
       width: 1000,
       height: 250,
       child: TextField(
-        controller: fieldText,
+        controller: widget.fieldText,
         cursorColor: Colors.black,
-        style:
-            const TextStyle(color: Color.fromARGB(255, 0, 0, 0), fontSize: 60),
+        style: current,
         maxLines: 5,
+        onChanged: (value) {
+          setState(() {
+            
+          });
+          print (current.toString());
+        },
         decoration: const InputDecoration(
           filled: true,
           hintText: "Enter Text Here",
@@ -149,30 +157,6 @@ class TextBox extends StatelessWidget {
   }
 }
 
-class FontChanger extends StatefulWidget {
-  const FontChanger({super.key});
-
-  @override
-  State<FontChanger> createState() => FontChangerState();
-}
-
-class FontChangerState extends State<FontChanger> {
-  double _currentSliderValue = 20;
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        body: Slider(
-            value: _currentSliderValue,
-            max: 100,
-            min: 10,
-            onChanged: ((double value) {
-              setState(() {
-                _currentSliderValue = value;
-              });
-            })));
-  }
-}
-
 class OptionsMenu extends StatelessWidget {
   const OptionsMenu({
     super.key,
@@ -181,21 +165,20 @@ class OptionsMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-        backgroundColor: const Color.fromARGB(255, 255, 245, 245),
+        //backgroundColor: const Color.fromARGB(255, 255, 245, 245),
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             const SizedBox(
               height: 88,
               child: DrawerHeader(
-                decoration:
-                    BoxDecoration(color: Color.fromARGB(255, 2, 189, 164)),
+                //decoration: BoxDecoration(color: Color.fromARGB(255, 2, 189, 164)),
                 child: Padding(
                   padding: EdgeInsets.zero,
                   child: Text(
                     "Menu",
                     style: TextStyle(
-                        color: Color.fromARGB(255, 255, 255, 255),
+                        //color: Color.fromARGB(255, 255, 255, 255),
                         fontSize: 24),
                   ),
                 ),
@@ -217,6 +200,16 @@ class OptionsMenu extends StatelessWidget {
                     MaterialPageRoute(
                         builder: (context) => const SettingsPage()));
               },
+            ),
+            ListTile(
+              leading: const Icon (Icons.info_rounded),
+              title: const Text("About"),
+              onTap: () {
+                Navigator.push (
+                  context,
+                  MaterialPageRoute (builder: (context) => const AboutPage())
+                );
+              }
             )
           ],
         ));
