@@ -81,3 +81,13 @@ Section 6 – Interpretation.
     To the extent possible, if any provision of this Research License is deemed unenforceable, it shall be automatically reformed to the minimum extent necessary to make it enforceable. If the provision cannot be reformed, it shall be severed from this Research License without affecting the enforceability of the remaining terms and conditions.
     No term or condition of this Research License will be waived and no failure to comply consented to unless expressly agreed to by the Licensor.
     Nothing in this Research License constitutes or may be interpreted as a limitation upon, or waiver of, any privileges and immunities that apply to the Licensor or You, including from the legal processes of any jurisdiction or authority.
+    
+References
+Andy Kong, Karan Ahuja, Mayank Goel, and Chris Harrison. 2021. EyeMU Interactions: Gaze + IMU Gestures on Mobile Devices. In Proceedings of the 2021 International Conference on Multimodal Interaction (ICMI '21). Association for Computing Machinery, New York, NY, USA, 577–585. DOI:https://doi.org/10.1145/3462244.3479938
+
+Valliappan, N., Dai, N., Steinberg, E. et al. Accelerating eye movement research via accurate and affordable smartphone eye tracking. Nat Commun 11, 4553 (2020). https://doi.org/10.1038/s41467-020-18360-5
+
+K.Krafka*, A. Khosla*, P. Kellnhofer, H. Kannan, S. Bhandarkar, W. Matusik and A. Torralba
+IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2016
+
+
