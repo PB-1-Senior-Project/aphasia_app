@@ -7,12 +7,18 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:wav/wav.dart';
+import 'settings.dart';
+import 'about.dart';
+import 'stream.dart';
 
 // Value that allows the user to change the size of the text in the textbox
 ValueNotifier<double> fontSize = ValueNotifier<double>(60.0);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+
+//StreamController<ThemeData> currentTheme = StreamController ();
 
   runApp(const MainApp());
 }
@@ -27,8 +33,17 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: HomePage(),
+    return StreamBuilder<ThemeData>(
+      initialData: lightTheme,
+      stream: currentTheme.stream,
+      builder: (context, snapshot) {
+        return MaterialApp (
+          home: const HomePage(),
+          theme: snapshot.data,
+          darkTheme: darkTheme,
+          themeMode: ThemeMode.light,
+        );
+      }
     );
   }
 }
@@ -252,56 +267,36 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // Screen height and width
-    double width = MediaQuery.of(context).size.width;
-    double height = MediaQuery.of(context).size.height;
-
-    // Code for the home page
-    return Stack(children: [
-      Scaffold(
-        backgroundColor: const Color.fromARGB(255, 69, 196, 255),
-        body: SingleChildScrollView(
-          child: Column(
+    return Scaffold(
+      //backgroundColor: const Color.fromARGB(255, 69, 196, 255),
+      // bottomNavigationBar: BottomNavigationBar(
+      //   items: const <BottomNavigationBarItem>[
+      //     BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+      //     BottomNavigationBarItem(icon: Icon(Icons.settings), label: "Settings")
+      //   ],
+      //   currentIndex: _selectedIndex,
+      //   onTap: _onNavTapped,
+      // ),
+      body: Column(
+        children: [
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(child: TextBox(fieldText: fieldText)),
+            ),
+          ),
+          Row(
+            // Buttons
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Center(
-                      // Code for the Textbox
-                      child: ValueListenableBuilder<double>(
-                          valueListenable: fontSize,
-                          builder: (context, value, child) {
-                            return SizedBox(
-                              width: 1000,
-                              height: 250,
-                              child: TextField(
-                                controller: fieldText,
-                                cursorColor: Colors.black,
-                                onTap: () {
-                                  String selected = getSelectedWord();
-                                  trySpeak(selected);
-                                  // Implement the text to speech here, have the TTS read out the value of the variable "selected"
-                                  // read(selected)
-                                },
-                                style: TextStyle(
-                                    color: const Color.fromARGB(255, 0, 0, 0),
-                                    fontSize: value),
-                                maxLines: 5,
-                                decoration: const InputDecoration(
-                                  filled: true,
-                                  hintText: "Enter Text Here",
-                                  fillColor: Color.fromARGB(255, 255, 255, 255),
-                                  border: OutlineInputBorder(
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                          child: const SettingsPage())
-                      // End of Textbox code
-                      ),
-                ),
+              ElevatedButton(
+                // This button is not functional yet
+                onPressed: () {
+                  print (ThemeData.light(useMaterial3: true));
+
+                  // Add the text to speech functionality here
+                },
+                child: const Text("Text to Speech test"),
               ),
               Center(
                 child: Row(
@@ -345,60 +340,54 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ],
-          ),
-        ),
-
-        // Code for the bar at the top of the app
-        appBar: AppBar(
-          title: const Text("Visually Assisted Speech Therapy"),
-          backgroundColor: const Color.fromARGB(255, 2, 189, 164),
-        ),
-        drawer: const Menu(),
+          )
+        ],
       ),
-
-      // NOT WORKING WITH CNN OUTPUT
-      // Code for the cursor that follows the user's gaze
-      // Need to add functionality to allow this to work as a cursor
-      Positioned(
-        // Commenting out the variables for the demo video to hide the red circle, change back when we have the CNN output
-        top: 2.0 * (height - 50), //_predictedX * (height - 50),
-        left: 2.0 * (width - 50), //_predictedY * (width - 50),
-        child: Container(
-          width: 50,
-          height: 50,
-          decoration: const BoxDecoration(
-            color: Colors.red,
-            shape: BoxShape.circle,
-          ),
-        ),
-      )
-    ]);
+      appBar: AppBar(
+        title: const Text("Visually Assisted Speech Therapy"),
+        //backgroundColor: const Color.fromARGB(255, 2, 189, 164),
+      ),
+      drawer: const OptionsMenu(),
+    );
   }
 }
 
-class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+class TextBox extends StatefulWidget {
+  const TextBox({
+    super.key,
+    required this.fieldText,
+  });
+
+  final TextEditingController fieldText;
 
   @override
-  State<SettingsPage> createState() => _SettingsPageState();
+  State<TextBox> createState() => _TextBoxState();
 }
 
-class _SettingsPageState extends State<SettingsPage> {
-  ValueListenable<double> textSize = ValueNotifier(60);
-
+class _TextBoxState extends State<TextBox> {
   @override
   Widget build(BuildContext context) {
-    // Code for the settings page
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Settings"),
-      ),
-      body: Column(children: [
-        const Padding(
-          padding: EdgeInsets.only(top: 16.0),
-          child: Text(
-            "Font Size",
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    return SizedBox(
+      // Text Box
+      width: 1000,
+      height: 250,
+      child: TextField(
+        controller: widget.fieldText,
+        cursorColor: Colors.black,
+        style: current,
+        maxLines: 5,
+        onChanged: (value) {
+          setState(() {
+            
+          });
+          print (current.toString());
+        },
+        decoration: const InputDecoration(
+          filled: true,
+          hintText: "Enter Text Here",
+          fillColor: Color.fromARGB(255, 255, 255, 255),
+          border: OutlineInputBorder(
+            borderSide: BorderSide.none,
           ),
         ),
         Center(
@@ -425,8 +414,8 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 }
 
-class Menu extends StatelessWidget {
-  const Menu({
+class OptionsMenu extends StatelessWidget {
+  const OptionsMenu({
     super.key,
   });
 
@@ -434,21 +423,20 @@ class Menu extends StatelessWidget {
   Widget build(BuildContext context) {
     // Code for the pop out menu
     return Drawer(
-        backgroundColor: const Color.fromARGB(255, 255, 245, 245),
+        //backgroundColor: const Color.fromARGB(255, 255, 245, 245),
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             const SizedBox(
               height: 88,
               child: DrawerHeader(
-                decoration:
-                    BoxDecoration(color: Color.fromARGB(255, 2, 189, 164)),
+                //decoration: BoxDecoration(color: Color.fromARGB(255, 2, 189, 164)),
                 child: Padding(
                   padding: EdgeInsets.zero,
                   child: Text(
                     "Menu",
                     style: TextStyle(
-                        color: Color.fromARGB(255, 255, 255, 255),
+                        //color: Color.fromARGB(255, 255, 255, 255),
                         fontSize: 24),
                   ),
                 ),
@@ -470,6 +458,16 @@ class Menu extends StatelessWidget {
                     MaterialPageRoute(
                         builder: (context) => const SettingsPage()));
               },
+            ),
+            ListTile(
+              leading: const Icon (Icons.info_rounded),
+              title: const Text("About"),
+              onTap: () {
+                Navigator.push (
+                  context,
+                  MaterialPageRoute (builder: (context) => const AboutPage())
+                );
+              }
             )
           ],
         ));
