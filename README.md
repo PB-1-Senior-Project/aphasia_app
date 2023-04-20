@@ -88,8 +88,7 @@ References
 
     Valliappan, N., Dai, N., Steinberg, E. et al. Accelerating eye movement research via accurate and affordable smartphone eye tracking. Nat Commun 11, 4553 (2020). https://doi.org/10.1038/s41467-020-18360-5
 
-    K.Krafka*, A. Khosla*, P. Kellnhofer, H. Kannan, S. Bhandarkar, W. Matusik and A. Torralba 
-    IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2016
+    Kyle Krafka, Aditya Khosla, Petr Kellnhofer, Harini Kannan, Suchi Bhandarkar, Wojciech Matusik and Antonio Torralba. “Eye Tracking for Everyone”. IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2016.
 
              
 
