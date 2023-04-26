@@ -318,9 +318,9 @@ public class MainActivity extends FlutterActivity {
                                         Bitmap upscaledLeftEye = Bitmap.createScaledBitmap(leftEye, 128, 128, true);
 
                                         // Saves the images of the face, left eye, and right eye on the device
-//                                        saveToInternalStorage(bitmapImage, "Face.jpg");
-//                                        saveToInternalStorage(upscaledLeftEye, "LeftEye.jpg");
-//                                        saveToInternalStorage(upscaledRightEye, "RightEye.jpg");
+                                       saveToInternalStorage(bitmapImage, "Face.jpg");
+                                       saveToInternalStorage(upscaledLeftEye, "LeftEye.jpg");
+                                       saveToInternalStorage(upscaledRightEye, "RightEye.jpg");
 
                                         // Creates the left eye input to the CNN
                                         TensorImage tempInput0 = new TensorImage(DataType.FLOAT32);
